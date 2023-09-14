@@ -12,9 +12,9 @@ double skalar_product(double* a, double* b, int n){
 void transpose(double** matrix, int n) //либо int matrix[][5], либо int (*matrix)[5]
 {
     double t;
-    for(int i = 0; i < n; ++i)
+    for (int i = 0; i < n; ++i)
     {
-        for(int j = i; j < n; ++j)
+        for (int j = i; j < n; ++j)
         {
             t = matrix[i][j];
             matrix[i][j] = matrix[j][i];
@@ -22,6 +22,8 @@ void transpose(double** matrix, int n) //либо int matrix[][5], либо int 
         }
     }
 }
+
+//ccommentary
 
 void Output(double** A,double* b,int n){
     cout << "Матрица:\n"<<endl;
@@ -86,12 +88,15 @@ int main(){
 
     Output(A,b,n);
     //Грамм-Шмидт
-    for(int i=0;i<n;i++){
+    for(int i=0;i<n;i++)
+    {
         Q[i]=A[i];
-        for(int k=0;k<i;k++){
+        for(int k=0;k<i;k++)
+        {
             proj(Q[k],A[i],temp,n);
             cout<<"\nПроекция "<<k<<": ";
-            for(int j=0;j<n;j++){//Q[i]=Q[i]-temp
+            for(int j=0;j<n;j++)
+            {//Q[i]=Q[i]-temp
                 cout<<temp[j]<<" ";
                 Q[i][j]=Q[i][j]-temp[j];
             }
