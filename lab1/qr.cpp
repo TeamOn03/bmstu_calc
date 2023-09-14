@@ -12,9 +12,9 @@ double skalar_product(double* a, double* b, int n){
 void transpose(double** matrix, int n) //либо int matrix[][5], либо int (*matrix)[5]
 {
     double t;
-    for(int i = 0; i < n; ++i)
+    for (int i = 0; i < n; ++i)
     {
-        for(int j = i; j < n; ++j)
+        for (int j = i; j < n; ++j)
         {
             t = matrix[i][j];
             matrix[i][j] = matrix[j][i];
@@ -23,6 +23,7 @@ void transpose(double** matrix, int n) //либо int matrix[][5], либо int 
     }
 }
 
+//eto govno ne rabotaet
 void Output(double** A,double* b,int n){
     cout << "Матрица:\n"<<endl;
         for (int i = 0; i < n; i++){
