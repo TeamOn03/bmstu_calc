@@ -3,7 +3,7 @@
 #include <math.h>
 using namespace std;
 
-
+//ДЛЯ ТЕСТА
 void sum_i2j_with_c(double** matrix,  int n,int i,int j, double c){
     for(int k=0;k<n;k++){
         matrix[j][k]=matrix[j][k]+c*matrix[i][k];
