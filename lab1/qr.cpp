@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <cmath>
 using namespace std;
 
 /*double skalar_product(double* a, double* b, int n) {
@@ -36,7 +37,7 @@ void MultiplyMatrix(double** aMatrix, double** bMatrix, double** product, int n)
     }
 }
 
-void Copy(double* data, double* newData, int n)
+void Copy(double** data, double** newData, int n)
 {
     for (int i = 0; i < n; i++)
     {
@@ -47,7 +48,7 @@ void Copy(double* data, double* newData, int n)
     }
 }
 
-void ToNull(double* OldM, int n)
+void ToNull(double** OldM, int n)
 {
     for (int i = 0; i < n; i++)
     {
@@ -58,7 +59,7 @@ void ToNull(double* OldM, int n)
     }
 }
 
-void ToOne(double* OldM, int n)
+void ToOne(double** OldM, int n)
 {
     ToNull(OldM, n);
     for (int j = 0; j < n; j++)
@@ -160,15 +161,15 @@ int main(){
     {
         for (int j = 0; j < i; j++)
         {
-            ToNull(T);
+            ToNull(T,n);
             cij = A[i][i] / (sqrt(A[i][i] * A[i][i] + A[j][i] * A[j][i]));
             sij = A[j][i] / (sqrt(A[i][i] * A[i][i] + A[j][i] * A[j][i]));
             T[i][i] = cij;
             T[i][j] = sij;
             T[j][i] = -sij;
             T[j][j] = cij;
-            MultiplyMatrix(T, A, R);
-            MultiplyMatrix(Q, T, Qn);
+            MultiplyMatrix(T, A, R,n);
+            MultiplyMatrix(Q, T, Q,n);
             Copy(A, R, n);
             Copy(Q, Qn, n);
         }
