@@ -29,6 +29,7 @@ void MultiplyMatrix(double** aMatrix, double** bMatrix, double** product, int n)
 {
     for (int row = 0; row < n; row++) {
         for (int col = 0; col < n; col++) {
+            product[row][col] = 0;
             for (int inner = 0; inner < n; inner++) {
                 product[row][col] += aMatrix[row][inner] * bMatrix[inner][col];
             }
@@ -68,17 +69,17 @@ void ToOne(double** OldM, int n)
     }
 }
 
-void Output(double** A,double* b,int n){
-    cout << "Матрица:\n"<<endl;
-        for (int i = 0; i < n; i++){
-            for (int j = 0; j < n; j++){
-                cout << A[i][j];
-                cout<<' ';
-            }
-            cout<<"   ";
-            cout<<b[i];
-            cout << endl;
+void Output(double** A, double* b, int n) {
+    cout << "Матрица:\n" << endl;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cout << A[i][j];
+            cout << ' ';
         }
+        cout << "   ";
+        cout << b[i];
+        cout << endl;
+    }
 }
 
 /*void proj(double* b, double* a, double* temp, int n) {
@@ -91,53 +92,64 @@ void Output(double** A,double* b,int n){
 
 
 
-int main(){
+int main() {
     setlocale(LC_ALL, "Russian");
     int n;
     double s;
-    cout<<"Введите размер системы: ";
-    cin>>n;
-    cout<<"Введите матрицу системы:\n";
+    cout << "Введите размер системы: ";
+    cin >> n;
+    cout << "Введите матрицу системы:\n";
     //Переделать матрицы под локальное выделение памяти?
     double** A;
-    A=new double*[n];
-    double** T;
-    T = new double* [n];
-    double** Q;
-    Q=new double*[n];
+    A = new double* [n];
+
     double** Qn;
     Qn = new double* [n];
+
+    double** T;
+    T = new double* [n];
+
+    double** Q;
+    Q = new double* [n];
+
     double** R;
-    R=new double*[n];
+    R = new double* [n];
+
     double* b;
-    b=new double[n];
+    b = new double[n];
+
+    double* bn;
+    bn = new double[n];
+
     double* x;
-    x=new double[n];
+    x = new double[n];
+
     double* temp;
-    temp=new double[n];
+    temp = new double[n];
 
 
-    for(int i=0;i<n;i++){
-        A[i]=new double[n];
-        Q[i]=new double[n];
-        R[i]=new double[n];
+    for (int i = 0; i < n; i++) {
+        A[i] = new double[n];
+        Q[i] = new double[n];
+        R[i] = new double[n];
+        Qn[i] = new double[n];
+        T[i] = new double[n];
     }
 
-    cout << "Введите матричные коэффициенты:\n";
-    for(int i=0;i<n;i++){
-        for(int j=0;j<n;j++){
-            cin>>A[j][i];
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> A[i][j];
         }
     }
 
 
 
-    cout<<"Введите свободные коэффициенты:\n";
-    for(int i=0;i<n;i++){
-        cin>>b[i];
+    cout << "Введите свободные коэффициенты:\n";
+    for (int i = 0; i < n; i++) {
+        cin >> b[i];
     }
 
-    Output(A,b,n);
+    Output(A, b, n);
     //Грамм-Шмидт
     /*for (int i = 0; i<n; i++)
     {
@@ -155,43 +167,66 @@ int main(){
     }*/
     /*Умножаем Т матрицу, сделанную в цикле, по принципу из файла и сразу же закидываем в Q. Q равна произведению Tij, поэтому потом ее транспонируем*/
     ToOne(Q, n);
-    int cij;
-    int sij;
+    double cij;
+    double sij;
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < i; j++)
         {
-            ToNull(T,n);
-            cij = A[i][i] / (sqrt(A[i][i] * A[i][i] + A[j][i] * A[j][i]));
-            sij = A[j][i] / (sqrt(A[i][i] * A[i][i] + A[j][i] * A[j][i]));
-            T[i][i] = cij;
-            T[i][j] = sij;
-            T[j][i] = -sij;
+            Copy(R, A, n);
+            ToOne(T, n);
+            cij = A[j][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
+            sij = A[i][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
             T[j][j] = cij;
-            MultiplyMatrix(T, A, R,n);
-            MultiplyMatrix(Q, T, Q,n);
+            T[j][i] = sij;
+            T[i][j] = -sij;
+            T[i][i] = cij;
+            Output(T, b, n);
+            for (int k = 0; k < n - j; k++)
+            {
+                R[j][j + k] = cij * A[j][j + k] + sij * A[i][j + k];
+                R[i][j + k] = -sij * A[j][j + k] + cij * A[i][j + k];
+            }
+            MultiplyMatrix(T, Q, Qn, n);
+            Output(R, b, n);
+            Output(Qn, b, n);
             Copy(A, R, n);
             Copy(Q, Qn, n);
         }
     }
+    //bn = T * b;
+    for (int i = 0; i < n; i++)
+    {
+        bn[i] = 0;
+        for (int j = 0; j < n; j++)
+        {
+            bn[i] += Q[i][j] * b[j];
+        }
+    }
+
     transpose(Q, n);
 
-    //Мне не нравится этот вывод
     Output(Q, b, n);
-    Output(R, b, n);
+    Output(R, bn, n);
 
-    for(int i=0;i<n;i++){
-        delete [] A[i];
-        delete [] Q[i];
-        delete [] R[i];
+    MultiplyMatrix(Q, R, A, n);
+    Output(A, b, n);
+
+    for (int i = 0; i < n; i++) {
+        delete[] A[i];
+        delete[] Q[i];
+        delete[] R[i];
+        delete[] Qn[i];
+        delete[] T[i];
     }
-    delete [] Q;
-    delete [] Qn;
-    delete [] R;
-    delete [] A;
-    delete [] b;
-    delete [] x;
-    delete [] temp;
-    delete [] T;
+    delete[] Q;
+    delete[] Qn;
+    delete[] R;
+    delete[] A;
+    delete[] b;
+    delete[] bn;
+    delete[] x;
+    delete[] temp;
+    delete[] T;
     return 0;
 }
