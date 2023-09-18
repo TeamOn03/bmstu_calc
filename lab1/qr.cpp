@@ -90,10 +90,33 @@ void Output(double** A, double* b, int n) {
     }
 }*/
 
+void Norm(int j, int n, double** Mat, double** QMat)
+{
+    double maks = 0;
+    int k = 0;
+    for (int i = j; i < n; i++)
+    {
+        if (maks < max(maks, abs(Mat[i][j])))
+        {
+            k = i;
+            maks = max(maks, abs(Mat[i][j]));
+        }
+
+    }
+    double* temp;
+    temp = Mat[j];
+    Mat[j] = Mat[k];
+    Mat[k] = temp;
+    temp = QMat[j];
+    QMat[j] = QMat[k];
+    QMat[k] = temp;
+}
+
 
 
 int main() {
     setlocale(LC_ALL, "Russian");
+    double eps = 0.0001;
     int n;
     double s;
     cout << "Введите размер системы: ";
@@ -166,11 +189,15 @@ int main() {
     ToOne(Qn, n);
     double cij;
     double sij;
-    Copy(R, A, n);
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < i; j++)
         {
+            Output(A, b, n);
+            if (abs(A[j][j]) < eps)
+                Norm(j, n, A, Q);
+            Copy(R, A, n);
+            Copy(Qn, Q, n);
             cij = A[j][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
             sij = A[i][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
 
