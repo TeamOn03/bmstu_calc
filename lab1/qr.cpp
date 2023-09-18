@@ -3,13 +3,6 @@
 #include <cmath>
 using namespace std;
 
-/*double skalar_product(double* a, double* b, int n) {
-    double ans=0;
-    for(int i=0;i<n;i++){
-        ans+=a[i]*b[i];
-    }
-    return n;
-}*/
 
 void transpose(double** matrix, int n) //либо int matrix[][5], либо int (*matrix)[5]
 {
@@ -70,7 +63,7 @@ void ToOne(double** OldM, int n)
 }
 
 void Output(double** A, double* b, int n) {
-    cout << "Матрица:\n" << endl;
+    //cout << "Матрица:\n" << endl;
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             cout << A[i][j];
@@ -82,13 +75,6 @@ void Output(double** A, double* b, int n) {
     }
 }
 
-/*void proj(double* b, double* a, double* temp, int n) {
-    double c1=skalar_product(a,b,n);
-    double c2=skalar_product(b,b,n);
-    for(int i=0;i<n;i++){
-        temp[i]=b[i]*c1/c2;
-    }
-}*/
 
 void Norm(int j, int n, double** Mat, double** QMat)
 {
@@ -147,7 +133,6 @@ int main() {
     double* temp;
     temp = new double[n];
 
-
     for (int i = 0; i < n; i++) {
         A[i] = new double[n];
         Q[i] = new double[n];
@@ -161,30 +146,11 @@ int main() {
         }
     }
 
-
-
     cout << "Введите свободные коэффициенты:\n";
     for (int i = 0; i < n; i++) {
         cin >> b[i];
     }
 
-    Output(A, b, n);
-    //Грамм-Шмидт
-    /*for (int i = 0; i<n; i++)
-    {
-        Q[i]=A[i];
-        for(int k=0;k<i;k++)
-        {
-            proj(Q[k],A[i],temp,n);
-            cout<<"\nПроекция "<<k<<": ";
-            for(int j=0;j<n;j++)
-            {//Q[i]=Q[i]-temp
-                cout<<temp[j]<<" ";
-                Q[i][j]=Q[i][j]-temp[j];
-            }
-        }
-    }*/
-    /*Умножаем Т матрицу, сделанную в цикле, по принципу из файла и сразу же закидываем в Q. Q равна произведению Tij, поэтому потом ее транспонируем*/
     ToOne(Q, n);
     ToOne(Qn, n);
     double cij;
@@ -193,7 +159,6 @@ int main() {
     {
         for (int j = 0; j < i; j++)
         {
-            Output(A, b, n);
             if (abs(A[j][j]) < eps)
                 Norm(j, n, A, Q);
             Copy(R, A, n);
@@ -211,8 +176,6 @@ int main() {
                 Qn[j][k] = cij * Q[j][k] + sij * Q[i][k];
                 Qn[i][k] = -sij * Q[j][k] + cij * Q[i][k];
             }
-            Output(R, b, n);
-            Output(Qn, b, n);
             Copy(A, R, n);
             Copy(Q, Qn, n);
         }
@@ -228,11 +191,13 @@ int main() {
     }
 
     transpose(Q, n);
-
+    cout<<"\nМатрица Q: \n";
     Output(Q, b, n);
+    cout<<"\nМатрица R: \n";
     Output(R, bn, n);
 
     MultiplyMatrix(Q, R, A, n);
+    cout<<"Перемножение Q на R (для проверки): \n";
     Output(A, b, n);
 
     for (int i = 0; i < n; i++) {
