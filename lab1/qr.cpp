@@ -106,9 +106,6 @@ int main() {
     double** Qn;
     Qn = new double* [n];
 
-    double** T;
-    T = new double* [n];
-
     double** Q;
     Q = new double* [n];
 
@@ -133,7 +130,6 @@ int main() {
         Q[i] = new double[n];
         R[i] = new double[n];
         Qn[i] = new double[n];
-        T[i] = new double[n];
     }
 
     for (int i = 0; i < n; i++) {
@@ -167,27 +163,27 @@ int main() {
     }*/
     /*Умножаем Т матрицу, сделанную в цикле, по принципу из файла и сразу же закидываем в Q. Q равна произведению Tij, поэтому потом ее транспонируем*/
     ToOne(Q, n);
+    ToOne(Qn, n);
     double cij;
     double sij;
+    Copy(R, A, n);
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < i; j++)
         {
-            Copy(R, A, n);
-            ToOne(T, n);
             cij = A[j][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
             sij = A[i][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
-            T[j][j] = cij;
-            T[j][i] = sij;
-            T[i][j] = -sij;
-            T[i][i] = cij;
-            Output(T, b, n);
-            for (int k = 0; k < n - j; k++)
+
+            for (int k = 0; k < n; k++)
             {
-                R[j][j + k] = cij * A[j][j + k] + sij * A[i][j + k];
-                R[i][j + k] = -sij * A[j][j + k] + cij * A[i][j + k];
+                R[j][k] = cij * A[j][k] + sij * A[i][k];
+                R[i][k] = -sij * A[j][k] + cij * A[i][k];
             }
-            MultiplyMatrix(T, Q, Qn, n);
+            for (int k = 0; k < n; k++)
+            {
+                Qn[j][k] = cij * Q[j][k] + sij * Q[i][k];
+                Qn[i][k] = -sij * Q[j][k] + cij * Q[i][k];
+            }
             Output(R, b, n);
             Output(Qn, b, n);
             Copy(A, R, n);
@@ -217,7 +213,6 @@ int main() {
         delete[] Q[i];
         delete[] R[i];
         delete[] Qn[i];
-        delete[] T[i];
     }
     delete[] Q;
     delete[] Qn;
@@ -227,6 +222,5 @@ int main() {
     delete[] bn;
     delete[] x;
     delete[] temp;
-    delete[] T;
     return 0;
 }
