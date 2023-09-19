@@ -98,6 +98,15 @@ void Norm(int j, int n, double** Mat, double** QMat)
     QMat[k] = temp;
 }
 
+void MultiplyMatrixToVector(double** Matrix, double* vector, double* result, int n){
+    for(int i=0;i<n;i++){
+        double s=0;
+        for(int j=0;j<n;j++){
+            s+=Matrix[i][j]*vector[j];
+        }
+        result[i]=s;
+    }
+}
 
 
 int main() {
@@ -197,8 +206,25 @@ int main() {
     Output(R, bn, n);
 
     MultiplyMatrix(Q, R, A, n);
-    cout<<"Перемножение Q на R (для проверки): \n";
-    Output(A, b, n);
+
+    transpose(Q,n);
+    MultiplyMatrixToVector(Q,b,bn,n);
+
+    //Обратный проход
+    for(int i=n-1;i>=0;i--){
+        s=0;
+        for(int j=i+1;j<n;j++){
+            s+=R[i][j]*x[j];
+        }
+        x[i]=(bn[i]-s)/R[i][i];
+    }
+
+
+    cout<<"\nОтвет (QR):\n";
+    for(int i=0;i<n;i++){
+        cout<<x[i]<<'\n';
+    }
+
 
     for (int i = 0; i < n; i++) {
         delete[] A[i];
