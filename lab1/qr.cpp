@@ -241,5 +241,6 @@ int main() {
     delete[] bn;
     delete[] x;
     delete[] temp;
+    fin.close();
     return 0;
 }
