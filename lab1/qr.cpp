@@ -110,12 +110,13 @@ void MultiplyMatrixToVector(double** Matrix, double* vector, double* result, int
 
 
 int main() {
+    ifstream fin("test.txt");
     setlocale(LC_ALL, "Russian");
     double eps = 0.0001;
     int n;
     double s;
     cout << "Введите размер системы: ";
-    cin >> n;
+    fin >> n;
     cout << "Введите матрицу системы:\n";
     //Переделать матрицы под локальное выделение памяти?
     double** A;
@@ -151,13 +152,13 @@ int main() {
 
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            cin >> A[i][j];
+            fin >> A[i][j];
         }
     }
 
     cout << "Введите свободные коэффициенты:\n";
     for (int i = 0; i < n; i++) {
-        cin >> b[i];
+        fin >> b[i];
     }
 
     ToOne(Q, n);

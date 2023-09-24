@@ -34,11 +34,12 @@ void swap_ij(double** matrix,int n,int i,int j){
 
 
 int main() {
+    ifstream fin("test.txt");
     setlocale(LC_ALL, "Russian");
     int n;
     double s;
     cout<<"Введите размер системы: ";
-    cin>>n;
+    fin>>n;
     cout<<"Введите матрицу системы:\n";
     double** A;
     A=new double*[n];
@@ -51,14 +52,14 @@ int main() {
 
     for(int i=0;i<n;i++){
         for(int j=0;j<n;j++){
-            cin>>A[i][j];
+            fin>>A[i][j];
         }
     }
 
 
     cout<<"Введите свободные коэффициенты:\n";
     for(int i=0;i<n;i++){
-        cin>>b[i];
+        fin>>b[i];
     }
     //Прямой проход
     for(int k=0;k<n;k++){
@@ -101,7 +102,7 @@ int main() {
         cout<<x[i]<<'\n';
     }
 
-
+    fin.close();
     for(int i=0;i<n;i++){
         delete [] A[i];
     }
