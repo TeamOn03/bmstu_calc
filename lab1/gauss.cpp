@@ -55,6 +55,14 @@ void Copy(double** data, double** newData, int n)
     }
 }
 
+void Copy(double* data, double* newData, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        data[i] = newData[i];
+    }
+}
+
 void ToNull(double** OldM, int n)
 {
     for (int i = 0; i < n; i++)
@@ -200,8 +208,10 @@ void MultiplyMatrixToVector(double** Matrix, double* vector, double* result, int
     }
 }
 
-void Gauss(double** A, double* b, double* x, int n)
+void Gauss(double** A, double* b, double* x, int n, double** Acopy, double* bcopy)
 {
+    Copy(bcopy, b, n);
+    Copy(Acopy, A, n);
     //Прямой проход
     for (int k = 0; k < n; k++) {
         //Находим максимальный элемент в столбце
@@ -240,19 +250,21 @@ void Gauss(double** A, double* b, double* x, int n)
         x[i] = (b[i] - s) / A[i][i];
     }
 
+    Copy(A, Acopy, n);
+    Copy(b, bcopy, n);
     //std::cout << "\nОтвет (Прямой метод Гаусса):\n";
     //for (int i = 0; i < n; i++) {
     //    std::cout << x[i] << '\n';
     //}
 }
 
-void Inverse(double** Ainv, double** A, int n, double* e)
+void Inverse(double** Ainv, double** A, int n, double* e, double** Acopy, double* bcopy)
 {
     for (int i = 0; i < n; i++)
     {
         ToNull(e, n);
         e[i] = 1;
-        Gauss(A, e, Ainv[i], n);
+        Gauss(A, e, Ainv[i], n, Acopy, bcopy);
     }
     transpose(Ainv, n);
 }
@@ -267,12 +279,16 @@ int main() {
     //std::cout << "Введите матрицу системы:\n";
     double** A;
     A = new double* [n];
+    double** Acopy;
+    Acopy = new double* [n];
     double** E;
     E = new double* [n];
     double** Ainv;
     Ainv = new double* [n];
     double* b;
     b = new double[n];
+    double* bcopy;
+    bcopy = new double[n];
     double* DopCount;
     DopCount = new double[n];
     double* x;
@@ -282,6 +298,7 @@ int main() {
         A[i] = new double[n];
         Ainv[i] = new double[n];
         E[i] = new double[n];
+        Acopy[i] = new double[n];
     }
 
     for (int i = 0; i < n; i++) {
@@ -296,7 +313,8 @@ int main() {
         fin >> b[i];
     }
 
-    Gauss(A, b, x, n);
+    //Copy(E, A, n);
+    Gauss(A, b, x, n, Acopy, bcopy);
 
     for (int i = 0; i < n; i++) {
         std::cout << x[i] << '\n';
@@ -324,14 +342,14 @@ int main() {
     double* e;
     e = new double[n];
 
-
-    Inverse(Ainv, A, n, e);
+    //Copy(A, E, n);
+    Inverse(Ainv, A, n, e, Acopy, bcopy);
     std::cout << std::endl << "Обратная матрица:" << std::endl;
     Output(Ainv, x, n);
 
     std::cout << "Число обусловленности: " << NormaMatInf(A, n, DopCount) * NormaMatInf(Ainv, n, DopCount) << std::endl;
     delete[] e;
-    //+оценка снизу с помощью полученных решений
+    /////////////////////////////////////////////////////////
 
     //5
     double vozm = 0.01;
@@ -342,7 +360,8 @@ int main() {
     double* x1;
     x1 = new double[n];
 
-    Gauss(A, b, x1, n);
+    //Copy(A, E, n);
+    Gauss(A, b, x1, n, Acopy, bcopy);
     std::cout << std::endl << "Решение системы с возмущенной правой частью:" << std::endl;
     for (int i = 0; i < n; i++) {
         std::cout << x1[i] << '\n';
@@ -380,7 +399,10 @@ int main() {
         delete[] A[i];
         delete[] Ainv[i];
         delete[] E[i];
+        delete[] Acopy[i];
     }
+    delete[] Acopy;
+    delete[] bcopy;
     delete[] DopCount;
     delete[] E;
     delete[] Ainv;
