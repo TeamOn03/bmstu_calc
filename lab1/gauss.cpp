@@ -4,9 +4,10 @@
 using namespace std;
 
 //ДЛЯ ТЕСТА
-void sum_i2j_with_c(double** matrix,  int n,int i,int j, double c){
+void sum_i2j_with_c(double** matrix, int i,int j, double c,int n){
     for(int k=0;k<n;k++){
         matrix[j][k]=matrix[j][k]+c*matrix[i][k];
+
     }
 }
 
@@ -38,9 +39,7 @@ int main() {
     setlocale(LC_ALL, "Russian");
     int n;
     double s;
-    cout<<"Введите размер системы: ";
     fin>>n;
-    cout<<"Введите матрицу системы:\n";
     double** A;
     A=new double*[n];
     double* b;
@@ -56,8 +55,7 @@ int main() {
         }
     }
 
-
-    cout<<"Введите свободные коэффициенты:\n";
+    Output(A,b,n);
     for(int i=0;i<n;i++){
         fin>>b[i];
     }
@@ -85,6 +83,7 @@ int main() {
             b[x]=b[x]+b[k]*(-A[x][k]/A[k][k]);
             sum_i2j_with_c(A,k,x,-A[x][k]/A[k][k],n);
         }
+
     }
 
     Output(A,b,n);

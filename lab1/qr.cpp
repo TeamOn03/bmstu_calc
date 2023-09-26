@@ -84,14 +84,14 @@ void Output(double** A, double* b, int n) {
 
 void NormVid(int j, int n, double** Mat, double** QMat)
 {
-    double maks = 0;
+    double max = 0;
     int k = 0;
     for (int i = j; i < n; i++)
     {
-        if (maks < std::max(maks, abs(Mat[i][j])))
+        if (abs(Mat[i][j])>max)
         {
             k = i;
-            maks = std::max(maks, abs(Mat[i][j]));
+            max = abs(Mat[i][j]);
         }
 
     }
