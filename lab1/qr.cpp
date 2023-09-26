@@ -26,7 +26,7 @@ void MultiplyMatrix(double** aMatrix, double** bMatrix, double** product, int n)
                 product[row][col] += aMatrix[row][inner] * bMatrix[inner][col];
             }
         }
-        std::cout << "\n";
+        //std::cout << "\n";
     }
 }
 
@@ -109,17 +109,16 @@ double NormaVectora1(double* b, int n)
     double answer = 0;
     for (int i = 0; i < n; i++)
     {
-        answer += abs([i]);
+        answer += abs(b[i]);
     }
     return answer;
 }
 
 double* DopCount;
 
-double NormaMat1(double** A, int n)
+double NormaMat1(double** A, int n, double* DopCount)
 {
     double maks = 0;
-    int k = 0;
     DopCount = new double[n];
 
     for (int i = 0; i < n; i++)
@@ -135,32 +134,28 @@ double NormaMat1(double** A, int n)
         if (maks < DopCount[j])
         {
             maks = DopCount[j];
-            k = j;
         }
     }
 
-    return DopCount[k];
+    return maks;
 }
 
 double NormaVectoraInf(double* b, int n)
 {
     double maks = 0;
-    int k = 0;
     for (int i = 0; i < n; i++)
     {
         if (maks < abs(b[i]))
         {
             maks = abs(b[i]);
-            k = i;
         }
     }
-    return b[k];
+    return maks;
 }
 
 double NormaMatInf(double** A, int n, double* DopCount)
 {
     double maks = 0;
-    int k = 0;
 
     for (int i = 0; i < n; i++)
     {
@@ -175,11 +170,10 @@ double NormaMatInf(double** A, int n, double* DopCount)
         if (maks < DopCount[i])
         {
             maks = DopCount[i];
-            k = i;
         }
     }
 
-    return DopCount[k];
+    return maks;
 }
 
 void MultiplyMatrixToVector(double** Matrix, double* vector, double* result, int n) {
@@ -224,20 +218,10 @@ void QR(double** A, double** R, double** Q, double** Qn, int n, double* b, doubl
             Copy(Q, Qn, n);
         }
     }
-    //bn = T * b;
-    for (int i = 0; i < n; i++)
-    {
-        bn[i] = 0;
-        for (int j = 0; j < n; j++)
-        {
-            bn[i] += Q[i][j] * b[j];
-        }
-    }
 
-    MultiplyMatrix(Q, R, A, n);
-
-    transpose(Q, n);
     MultiplyMatrixToVector(Q, b, bn, n);
+    transpose(Q, n);
+    MultiplyMatrix(Q, R, A, n);
 
     double s;
 
@@ -248,12 +232,6 @@ void QR(double** A, double** R, double** Q, double** Qn, int n, double* b, doubl
             s += R[i][j] * x[j];
         }
         x[i] = (bn[i] - s) / R[i][i];
-    }
-
-
-    //std::cout << "\nОтвет (QR):\n";
-    for (int i = 0; i < n; i++) {
-        std::cout << x[i] << '\n';
     }
 }
 
@@ -272,12 +250,10 @@ void Inverse(double** Ainv, double** A, double** R, double** Q, double** Qn, int
 int main() {
     std::ifstream fin("test.txt");
     setlocale(LC_ALL, "Russian");
-    double eps = 0.0001;
     int n;
-    double s;
-    std::cout << "Введите размер системы: ";
+    //std::cout << "Введите размер системы: ";
     fin >> n;
-    std::cout << "Введите матрицу системы:\n";
+    //std::cout << "Введите матрицу системы:\n";
     //Переделать матрицы под локальное выделение памяти?
     double** A;
     A = new double* [n];
@@ -323,13 +299,16 @@ int main() {
         }
     }
 
-    std::cout << "Введите свободные коэффициенты:\n";
+    //std::cout << "Введите свободные коэффициенты:\n";
     for (int i = 0; i < n; i++) {
         fin >> b[i];
     }
 
-    std::cout << "Решение системы:";
+    std::cout << "Решение системы из файла: " << std::endl;
     QR(A, R, Q, Qn, n, b, bn, x);
+    for (int i = 0; i < n; i++) {
+        std::cout << x[i] << '\n';
+    }
 
     //3
     double* b1;
@@ -344,14 +323,9 @@ int main() {
         {
             bdop += A[i][j] * x[j];
         }
-        b1[i] = bdop;
-        for (int j = 0; j < n; j++)
-        {
-            b1[i] = b[i] - b1[i];
-        }
+        b1[i] = b[i] - bdop;
     }
-    std::cout << "Норма невязки:" << (NormaVectora1(b1, n));
-    delete[] b1;
+    std::cout << std::endl << "Норма невязки: " << (NormaVectora1(b1, n));
     /////////////////////////////////////////////////////////
 
     //4,6
@@ -360,10 +334,10 @@ int main() {
 
 
     Inverse(Ainv, A, R, Q, Qn, n, e, bn);
-    std::cout << "Обратная матрица:" << std::endl;
+    std::cout << std::endl << "Обратная матрица:" << std::endl;
     Output(Ainv, x, n);
 
-    std::cout << "Число обусловленности: " << NormaMatInf(A, n, DopCount) * NormaMatInf(Ainv, n, DopCount);
+    std::cout << "Число обусловленности: " << NormaMatInf(A, n, DopCount) * NormaMatInf(Ainv, n, DopCount) << std::endl;
     delete[] e;
     //+оценка снизу с помощью полученных решений
 
@@ -377,19 +351,34 @@ int main() {
     x1 = new double[n];
 
     QR(A, R, Q, Qn, n, b, bn, x1);
+    std::cout << std::endl << "Решение системы с возмущенной правой частью:" << std::endl;
+    for (int i = 0; i < n; i++) {
+        std::cout << x1[i] << '\n';
+    }
 
+    std::cout << std::endl;
+
+
+    for (int i = 0; i < n; i++) {
+        b[i] = b[i] - vozm;
+    }
+    for (int i = 0; i < n; i++) {
+        b1[i] = vozm;
+    }
     for (int i = 0; i < n; i++)
     {
         x1[i] = abs(x[i]) - abs(x1[i]);
         std::cout << x1[i] << std::endl;
     }
 
-    std::cout << "Норма вектора расхождений решений" << NormaVectora1(x1, n);
+    std::cout << "Норма вектора расхождений решений: " << NormaVectora1(x1, n) << std::endl;
+    std::cout << "Оценка снизу числа обусловленности: " << NormaVectoraInf(x1, n) / NormaVectoraInf(x, n) * NormaVectoraInf(b, n) / NormaVectoraInf(b1, n) << std::endl;
 
+    delete[] b1;
     delete[] x1;
     ////////////////////////////////////////////////////////////////////////////
 
-    std::cout << "Единичная:";
+    std::cout << "Единичная:" << std::endl;
     MultiplyMatrix(A, Ainv, Q, n);
     Output(Q, b, n);
 
