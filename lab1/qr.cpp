@@ -109,7 +109,7 @@ double NormaVectora1(double* b, int n)
     double answer = 0;
     for (int i = 0; i < n; i++)
     {
-        answer += b[i];
+        answer += abs([i]);
     }
     return answer;
 }
@@ -130,7 +130,7 @@ double NormaMat1(double** A, int n)
     {
         for (int i = 0; i < n; i++)
         {
-            DopCount[j] += A[i][j];
+            DopCount[j] += abs(A[i][j]);
         }
         if (maks < DopCount[j])
         {
@@ -148,9 +148,9 @@ double NormaVectoraInf(double* b, int n)
     int k = 0;
     for (int i = 0; i < n; i++)
     {
-        if (maks < b[i])
+        if (maks < abs(b[i]))
         {
-            maks = b[i];
+            maks = abs(b[i]);
             k = i;
         }
     }
@@ -170,7 +170,7 @@ double NormaMatInf(double** A, int n, double* DopCount)
     {
         for (int j = 0; j < n; j++)
         {
-            DopCount[i] += A[i][j];
+            DopCount[i] += abs(A[i][j]);
         }
         if (maks < DopCount[i])
         {
