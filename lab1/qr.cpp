@@ -88,7 +88,7 @@ void NormVid(int j, int n, double** Mat, double** QMat)
     int k = 0;
     for (int i = j; i < n; i++)
     {
-        if (abs(Mat[i][j])>max)
+        if (abs(Mat[i][j]) > max)
         {
             k = i;
             max = abs(Mat[i][j]);
@@ -326,6 +326,20 @@ int main() {
         b1[i] = b[i] - bdop;
     }
     std::cout << std::endl << "Норма невязки: " << (NormaVectora1(b1, n));
+
+    double* x1;
+    x1 = new double[n];
+
+    x1[0] = 1;
+    x1[1] = 1000;
+    x1[2] = -20;
+    x1[3] = 3;
+
+    for (int i = 0; i < n; i++)
+    {
+        x1[i] = abs(abs(x1[i]) - abs(x[i]));
+    }
+    std::cout << std::endl << "Норма рассхождения численных решений от теоретических значений: " << (NormaVectora1(x1, n));
     /////////////////////////////////////////////////////////
 
     //4,6
@@ -347,8 +361,6 @@ int main() {
         b[i] = b[i] + vozm;
     }
 
-    double* x1;
-    x1 = new double[n];
 
     QR(A, R, Q, Qn, n, b, bn, x1);
     std::cout << std::endl << "Решение системы с возмущенной правой частью:" << std::endl;
