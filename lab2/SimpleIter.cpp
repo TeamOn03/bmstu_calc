@@ -150,38 +150,51 @@ void Output(double** A, int n) {
     }
 }
 
+void matrix_diag_poz_sign(double** matrix, int n, double* b) {
+    for (int i = 0; i < n; i++) {
+        if (matrix[i][i] < 0)
+        {
+            for (int j = 0; j < n; j++)
+                matrix[i][j] = (-1) * matrix[i][j];
+            b[i] *= -1;
+        }
+    }
+}
+
 void SimpleIter(double** A, double** C, double* b, double* y, double* x, double* x_old, int n, double* diff)
 {
-    double eps = 0.001;
+    double eps = 1e-9;
     //Начальное приближение x^0 любое
     ToNull(x, n);
-    double tao = 1;
+    double tao = 0.0001;
+    matrix_diag_poz_sign(A, n, b);
     //C = -(tao*A-E)
     //y = tao*b
     ToOne(C, n);
-    while (NormaMat1(C, n) >= 1)
+    for (int i = 0; i < n; i++)
     {
-        tao -= 0.0001;
-        for (int i = 0; i < n; i++)
+        y[i] = tao * b[i];
+        for (int j = 0; j < n; j++)
         {
-            y[i] = tao * b[i];
-            for (int j = 0; j < n; j++)
-            {
-                C[i][j] = -tao * A[i][j];
-                if (i == j)
-                    C[i][j]++;
-            }
+            C[i][j] = -tao * A[i][j];
+            if (i == j)
+                C[i][j]++;
         }
-        std::cout << NormaMat1(C, n) << " " << NormaMatInf(C, n) << " " << tao << std::endl;
     }
+    //std::cout << NormaMat1(C, n) << " " << NormaMatInf(C, n) << " " << tao << std::endl;
     //x^(k+1)=C*x^k+y
+    //if (NormaMat1(C,n) >= 1)
+    //{
+    //    std::cout << "Error, normC >= 1\n";
+    //    return;
+    //}
     Copy(x_old, x, n);
     MultiplyMatrixToVector(C, x_old, x, n);
     SumVect(x, y, n);
     Copy(diff, x, n);
-    OutputVect(x_old, n);
+    //OutputVect(x_old, n);
     DiffVect(diff, x_old, n);
-    OutputVect(diff, n);
+    //OutputVect(diff, n);
     while (NormaVectora1(diff, n) > eps)
     {
         Copy(x_old, x, n);
