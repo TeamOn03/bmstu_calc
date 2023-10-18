@@ -260,7 +260,7 @@ void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double*
 }
 
 
-void Zeidel4Vect(double* a, double* b, double* c, double* d, int n, double* x, double* x_old, double* diff, double** L, double** D, double** U)
+void Zeidel4Vect(double* a, double* b, double* c, double* d, int n, double* x, double* x_old, double* diff, double** L, double** D, double** U, double** C)
 {
     double omega = 1;
     double eps = 1e-10;
@@ -329,6 +329,9 @@ int main() {
     double** A;
     A = new double* [n];
 
+    double** C;
+    C = new double* [n];
+
     double** L;
     L = new double* [n];
     double** D;
@@ -338,6 +341,7 @@ int main() {
 
     for (int i = 0; i < n; i++)
     {
+        C[i] = new double[n];
         A[i] = new double[n];
         L[i] = new double[n];
         D[i] = new double[n];
@@ -404,6 +408,15 @@ int main() {
     std::cout << "Норма невязки: " << NormaVectora1(b1, n);
 
     delete[] b1;
+
+    for (int i = 0; i < n; i++)
+    {
+        delete[] C[i];
+        delete[] A[i];
+        delete[] L[i];
+        delete[] D[i];
+        delete[] U[i];
+    }
 
     delete[] a;
     delete[] b;

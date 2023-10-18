@@ -2,6 +2,41 @@
 #include <fstream>
 #include <cmath>
 
+void transpose(double** matrix, int n) //либо int matrix[][5], либо int (*matrix)[5]
+{
+    double t;
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = i; j < n; ++j)
+        {
+            t = matrix[i][j];
+            matrix[i][j] = matrix[j][i];
+            matrix[j][i] = t;
+        }
+    }
+}
+
+void NormVid(int j, int n, double** Mat, double** QMat)
+{
+    double max = 0;
+    int k = 0;
+    for (int i = j; i < n; i++)
+    {
+        if (abs(Mat[i][j]) > max)
+        {
+            k = i;
+            max = abs(Mat[i][j]);
+        }
+
+    }
+    double* temp;
+    temp = Mat[j];
+    Mat[j] = Mat[k];
+    Mat[k] = temp;
+    temp = QMat[j];
+    QMat[j] = QMat[k];
+    QMat[k] = temp;
+}
 
 void OutputVect(double* x, int n)
 {
@@ -96,6 +131,16 @@ void SumVect(double* VectA, double* VectB, int n) {
     }
 }
 
+void SumMat(double** MatA, double** MatB, double** Result, int n) {
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            Result[i][j] = MatA[i][j] + MatB[i][j];
+        }
+    }
+}
+
 void DiffVect(double* VectA, double* VectB, int n)
 {
     for (int i = 0; i < n; i++)
@@ -109,6 +154,17 @@ void Copy(double* data, double* newData, int n)
     for (int i = 0; i < n; i++)
     {
         data[i] = newData[i];
+    }
+}
+
+void Copy(double** data, double** newData, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            data[i][j] = newData[i][j];
+        }
     }
 }
 
@@ -178,6 +234,19 @@ double* SumVectWithResult(double* VectA, double* VectB, int n) {
     return result;
 }
 
+void MultiplyMatrix(double** aMatrix, double** bMatrix, double** product, int n)
+{
+    for (int row = 0; row < n; row++) {
+        for (int col = 0; col < n; col++) {
+            product[row][col] = 0;
+            for (int inner = 0; inner < n; inner++) {
+                product[row][col] += aMatrix[row][inner] * bMatrix[inner][col];
+            }
+        }
+        //std::cout << "\n";
+    }
+}
+
 void LDU(double** A, int n, double** L, double** D, double** U)
 {
     for (int i = 0; i < n; i++)
@@ -222,14 +291,41 @@ void LDU(double* a, double* b, double* c, double* d, int n, double** L, double**
     }
 }
 
-void Relaxation(double** A, double* b, double eps, double* x, double* x_old, double* diff, int n, double** L, double** D, double** U)
+void MatrixOnCoef(double** Mat, double coef, int n)
 {
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            Mat[i][j] *= -1;
+        }
+    }
+}
+
+void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double* diff, int n, double** L, double** D, double** U, double** C)
+{
+    double* y = new double[n];
     int iterations = 0;
-    double omega = 0.01;
+    double omega = 0.001
+    ///*
+    for (int i = 0; i < n; i++)
+    {
+        y[i] = b[i] / A[i][i];
+        for (int j = 0; j < n; j++)
+        {
+            if (j != i)
+            {
+                C[i][j] = -A[i][j] / A[i][i];
+            }
+            else
+                C[i][j] = 0;
+        }
+    }
     std::cout << "Матрица С и вектор y: " << std::endl;
     Output(C, n);
     OutputVect(y, n);
     std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
+    //*/
     do
     {
         ToNull(diff, n);
@@ -256,13 +352,16 @@ void Relaxation(double** A, double* b, double eps, double* x, double* x_old, dou
         iterations++;
     } while (NormaVectora1(diff, n) > eps);
     OutputVect(x, n);
+
     std::cout << "Количество иттераций: " << iterations << "\n";
+    delete[] y;
 }
 
 
-void Relaxation4Vect(double* a, double* b, double* c, double* d, int n, double* x, double* x_old, double* diff, double** L, double** D, double** U)
+void Zeidel4Vect(double* a, double* b, double* c, double* d, int n, double* x, double* x_old, double* diff, double** L, double** D, double** U, double** C)
 {
-    double omega = 1.5;
+    double* y = new double[n];
+    double omega = 1.9;
     double eps = 1e-10;
     for (int i = 0; i < n; i++) {
         x_old[i] = 0;
@@ -270,10 +369,28 @@ void Relaxation4Vect(double* a, double* b, double* c, double* d, int n, double* 
     for (int i = 0; i < n; i++) {
         x[i] = 1;
     }
-    std::cout << "Матрица С и вектор y: " << std::endl;
-    Output(C, n);
-    OutputVect(y, n);
+
+    for (int i = 0; i < n; i++)
+    {
+        y[i] = d[i] / b[i];
+        for (int j = 0; j < n; j++)
+        {
+            if (j > i)
+            {
+                C[i][j] = -c[j] / b[i];
+            }
+            if (j < i)
+            {
+                C[i][j] = -a[j] / b[i];
+            }
+            else
+                C[i][j] = 0;
+        }
+    }
     std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
+    std::cout << "Матрица С и вектор y: " << std::endl;
+    //Output(C, n);
+    //OutputVect(y, n);
 
     Copy(diff, x, n);
     DiffVect(diff, x_old, n);
@@ -295,6 +412,7 @@ void Relaxation4Vect(double* a, double* b, double* c, double* d, int n, double* 
         DiffVect(diff, x_old, n);
         normD = NormaVectora1(diff, n);
     }
+    delete[] y;
 }
 
 int main() {
@@ -329,6 +447,9 @@ int main() {
     double** A;
     A = new double* [n];
 
+    double** C;
+    C = new double* [n];
+
     double** L;
     L = new double* [n];
     double** D;
@@ -338,6 +459,7 @@ int main() {
 
     for (int i = 0; i < n; i++)
     {
+        C[i] = new double[n];
         A[i] = new double[n];
         L[i] = new double[n];
         D[i] = new double[n];
@@ -357,9 +479,34 @@ int main() {
 
     ToOne(x, n);
     std::cout << "Решение системы из файла: " << std::endl;
-    Relaxation(A, b, 1e-10, x, x_old, diff, n, L, D, U);
+    Zeidel(A, b, 1e-10, x, x_old, diff, n, L, D, U, C);
+    double* b1;
+    b1 = new double[n];
+
+    MultiplyMatrixToVector(A, x, b1, n);
+    DiffVect(b1, b, n);
+    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
+
 
     n = 216;
+    A = new double* [n];
+
+    C = new double* [n];
+
+    L = new double* [n];
+
+    D = new double* [n];
+
+    U = new double* [n];
+
+    for (int i = 0; i < n; i++)
+    {
+        C[i] = new double[n];
+        A[i] = new double[n];
+        L[i] = new double[n];
+        D[i] = new double[n];
+        U[i] = new double[n];
+    }
     a = new double[n - 1];
 
     b = new double[n];
@@ -383,29 +530,27 @@ int main() {
     d[0] = 6;
     d[n - 1] = 9 - 3 * (n % 2);
 
-    double* b1;
-    b1 = new double[n];
-
-    MultiplyMatrixToVector(A, x, b1, n);
-    DiffVect(b1, b, n);
-    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
-
-    delete[] b1;
-
     std::cout << "Решение заданной системы: " << std::endl;
-    Relaxation4Vect(a, b, c, d, n, x, x_old, diff, L, D, U);
+    Zeidel4Vect(a, b, c, d, n, x, x_old, diff, L, D, U, C);
     for (int i = 0; i < n; i++) {
         std::cout << x[i] << '\n';
     }
+    //b1 = new double[n];
 
-    double* b1;
-    b1 = new double[n];
-
-    MultiplyMatrixToVector(A, x, b1, n);
-    DiffVect(b1, b, n);
-    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
+    //MultiplyMatrixToVector(A, x, b1, n);
+    //DiffVect(b1, b, n);
+    //std::cout << "Норма невязки: " << NormaVectora1(b1, n);
 
     delete[] b1;
+
+    for (int i = 0; i < n; i++)
+    {
+        delete[] C[i];
+        delete[] A[i];
+        delete[] L[i];
+        delete[] D[i];
+        delete[] U[i];
+    }
 
     delete[] a;
     delete[] b;
@@ -414,6 +559,11 @@ int main() {
     delete[] x;
     delete[] x_old;
     delete[] diff;
+    delete[] C;
+    delete[] A;
+    delete[] L;
+    delete[] D;
+    delete[] U;
     fin.close();
     return 0;
 }

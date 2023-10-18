@@ -224,9 +224,20 @@ int main() {
     double* diff;
     diff = new double[n];
 
-    for (int i = 0; i < n; i++) {
-        A[i] = new double[n];
+    double** L;
+    L = new double* [n];
+    double** D;
+    D = new double* [n];
+    double** U;
+    U = new double* [n];
+
+    for (int i = 0; i < n; i++)
+    {
         C[i] = new double[n];
+        A[i] = new double[n];
+        L[i] = new double[n];
+        D[i] = new double[n];
+        U[i] = new double[n];
     }
 
     for (int i = 0; i < n; i++) {
@@ -251,12 +262,17 @@ int main() {
     MultiplyMatrixToVector(A, x, b1, n);
     DiffVect(b1, b, n);
     std::cout << "Норма невязки: " << NormaVectora1(b1, n);
-
-    delete[] b1;
-    for (int i = 0; i < n; i++) {
-        delete[] A[i];
+    
+    for (int i = 0; i < n; i++)
+    {
         delete[] C[i];
+        delete[] A[i];
+        delete[] L[i];
+        delete[] D[i];
+        delete[] U[i];
     }
+
+
     delete[] C;
     delete[] A;
     delete[] b;
