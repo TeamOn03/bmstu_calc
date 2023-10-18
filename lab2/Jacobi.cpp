@@ -157,8 +157,7 @@ void Jacobi(double** A, double** C, double* b, double* y, double* x, double* x_o
     ToNull(x, n);
 
     //ToOne(C, n);
-    //while (NormaMat1(C, n) >= 1)
-    //{
+
     for (int i = 0; i < n; i++)
     {
         y[i] = b[i] / A[i][i];
@@ -172,9 +171,8 @@ void Jacobi(double** A, double** C, double* b, double* y, double* x, double* x_o
                 C[i][j] = 0;
         }
     }
-    //std::cout << NormaMat1(C, n) << std::endl;
-//}
-//x^(k+1)=C*x^k+y
+
+    //x^(k+1)=C*x^k+y
     Copy(x_old, x, n);
     MultiplyMatrixToVector(C, x_old, x, n);
     SumVect(x, y, n);

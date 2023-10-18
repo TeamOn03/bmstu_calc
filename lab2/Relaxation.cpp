@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <fstream>
 #include <cmath>
 
@@ -222,10 +222,10 @@ void LDU(double* a, double* b, double* c, double* d, int n, double** L, double**
     }
 }
 
-void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double* diff, int n, double** L, double** D, double** U)
+void Relaxation(double** A, double* b, double eps, double* x, double* x_old, double* diff, int n, double** L, double** D, double** U)
 {
     int iterations = 0;
-    double omega = 1;
+    double omega = 0.01;
     do
     {
         ToNull(diff, n);
@@ -256,9 +256,9 @@ void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double*
 }
 
 
-void Zeidel4Vect(double* a, double* b, double* c, double* d, int n, double* x, double* x_old, double* diff, double** L, double** D, double** U)
+void Relaxation4Vect(double* a, double* b, double* c, double* d, int n, double* x, double* x_old, double* diff, double** L, double** D, double** U)
 {
-    double omega = 1;
+    double omega = 1.5;
     double eps = 1e-10;
     for (int i = 0; i < n; i++) {
         x_old[i] = 0;
@@ -349,7 +349,7 @@ int main() {
 
     ToOne(x, n);
     std::cout << "Решение системы из файла: " << std::endl;
-    Zeidel(A, b, 1e-10, x, x_old, diff, n, L, D, U);
+    Relaxation(A, b, 1e-10, x, x_old, diff, n, L, D, U);
 
     n = 216;
     a = new double[n - 1];
@@ -376,7 +376,7 @@ int main() {
     d[n - 1] = 9 - 3 * (n % 2);
 
     std::cout << "Решение заданной системы: " << std::endl;
-    Zeidel4Vect(a, b, c, d, n, x, x_old, diff, L, D, U);
+    Relaxation4Vect(a, b, c, d, n, x, x_old, diff, L, D, U);
     for (int i = 0; i < n; i++) {
         std::cout << x[i] << '\n';
     }

@@ -181,20 +181,12 @@ void SimpleIter(double** A, double** C, double* b, double* y, double* x, double*
                 C[i][j]++;
         }
     }
-    //std::cout << NormaMat1(C, n) << " " << NormaMatInf(C, n) << " " << tao << std::endl;
     //x^(k+1)=C*x^k+y
-    //if (NormaMat1(C,n) >= 1)
-    //{
-    //    std::cout << "Error, normC >= 1\n";
-    //    return;
-    //}
     Copy(x_old, x, n);
     MultiplyMatrixToVector(C, x_old, x, n);
     SumVect(x, y, n);
     Copy(diff, x, n);
-    //OutputVect(x_old, n);
     DiffVect(diff, x_old, n);
-    //OutputVect(diff, n);
     while (NormaVectora1(diff, n) > eps)
     {
         Copy(x_old, x, n);
