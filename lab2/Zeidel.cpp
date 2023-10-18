@@ -226,6 +226,10 @@ void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double*
 {
     int iterations = 0;
     double omega = 1;
+    std::cout << "Матрица С и вектор y: " << std::endl;
+    Output(C, n);
+    OutputVect(y, n);
+    std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
     do
     {
         ToNull(diff, n);
@@ -252,7 +256,7 @@ void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double*
         iterations++;
     } while (NormaVectora1(diff, n) > eps);
     OutputVect(x, n);
-    std::cout << "number of iterations = " << iterations << "\n";
+    std::cout << "Количество иттераций: " << iterations << "\n";
 }
 
 
@@ -266,6 +270,10 @@ void Zeidel4Vect(double* a, double* b, double* c, double* d, int n, double* x, d
     for (int i = 0; i < n; i++) {
         x[i] = 1;
     }
+    std::cout << "Матрица С и вектор y: " << std::endl;
+    Output(C, n);
+    OutputVect(y, n);
+    std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
 
     Copy(diff, x, n);
     DiffVect(diff, x_old, n);
@@ -350,6 +358,14 @@ int main() {
     ToOne(x, n);
     std::cout << "Решение системы из файла: " << std::endl;
     Zeidel(A, b, 1e-10, x, x_old, diff, n, L, D, U);
+    double* b1;
+    b1 = new double[n];
+
+    MultiplyMatrixToVector(A, x, b1, n);
+    DiffVect(b1, b, n);
+    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
+
+    delete[] b1;
 
     n = 216;
     a = new double[n - 1];
@@ -380,6 +396,14 @@ int main() {
     for (int i = 0; i < n; i++) {
         std::cout << x[i] << '\n';
     }
+    double* b1;
+    b1 = new double[n];
+
+    MultiplyMatrixToVector(A, x, b1, n);
+    DiffVect(b1, b, n);
+    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
+
+    delete[] b1;
 
     delete[] a;
     delete[] b;

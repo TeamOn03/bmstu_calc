@@ -226,6 +226,10 @@ void Relaxation(double** A, double* b, double eps, double* x, double* x_old, dou
 {
     int iterations = 0;
     double omega = 0.01;
+    std::cout << "Матрица С и вектор y: " << std::endl;
+    Output(C, n);
+    OutputVect(y, n);
+    std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
     do
     {
         ToNull(diff, n);
@@ -252,7 +256,7 @@ void Relaxation(double** A, double* b, double eps, double* x, double* x_old, dou
         iterations++;
     } while (NormaVectora1(diff, n) > eps);
     OutputVect(x, n);
-    std::cout << "number of iterations = " << iterations << "\n";
+    std::cout << "Количество иттераций: " << iterations << "\n";
 }
 
 
@@ -266,6 +270,10 @@ void Relaxation4Vect(double* a, double* b, double* c, double* d, int n, double* 
     for (int i = 0; i < n; i++) {
         x[i] = 1;
     }
+    std::cout << "Матрица С и вектор y: " << std::endl;
+    Output(C, n);
+    OutputVect(y, n);
+    std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
 
     Copy(diff, x, n);
     DiffVect(diff, x_old, n);
@@ -375,11 +383,29 @@ int main() {
     d[0] = 6;
     d[n - 1] = 9 - 3 * (n % 2);
 
+    double* b1;
+    b1 = new double[n];
+
+    MultiplyMatrixToVector(A, x, b1, n);
+    DiffVect(b1, b, n);
+    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
+
+    delete[] b1;
+
     std::cout << "Решение заданной системы: " << std::endl;
     Relaxation4Vect(a, b, c, d, n, x, x_old, diff, L, D, U);
     for (int i = 0; i < n; i++) {
         std::cout << x[i] << '\n';
     }
+
+    double* b1;
+    b1 = new double[n];
+
+    MultiplyMatrixToVector(A, x, b1, n);
+    DiffVect(b1, b, n);
+    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
+
+    delete[] b1;
 
     delete[] a;
     delete[] b;

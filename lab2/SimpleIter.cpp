@@ -163,6 +163,7 @@ void matrix_diag_poz_sign(double** matrix, int n, double* b) {
 
 void SimpleIter(double** A, double** C, double* b, double* y, double* x, double* x_old, int n, double* diff)
 {
+    iterations = 0;
     double eps = 1e-9;
     //Начальное приближение x^0 любое
     ToNull(x, n);
@@ -182,6 +183,10 @@ void SimpleIter(double** A, double** C, double* b, double* y, double* x, double*
         }
     }
     //x^(k+1)=C*x^k+y
+    std::cout << "Матрица С и вектор y: " << std::endl;
+    Output(C, n);
+    OutputVect(y, n);
+    std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
     Copy(x_old, x, n);
     MultiplyMatrixToVector(C, x_old, x, n);
     SumVect(x, y, n);
@@ -194,6 +199,7 @@ void SimpleIter(double** A, double** C, double* b, double* y, double* x, double*
         SumVect(x, y, n);
         Copy(diff, x, n);
         DiffVect(diff, x_old, n);
+        std::cout << "Количество иттераций: " << iterations << "\n";
     }
 
 }
@@ -248,6 +254,14 @@ int main() {
     for (int i = 0; i < n; i++) {
         std::cout << x[i] << '\n';
     }
+    double* b1;
+    b1 = new double[n];
+
+    MultiplyMatrixToVector(A, x, b1, n);
+    DiffVect(b1, b, n);
+    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
+
+    delete[] b1;
 
     for (int i = 0; i < n; i++) {
         delete[] A[i];
