@@ -163,7 +163,7 @@ void matrix_diag_poz_sign(double** matrix, int n, double* b) {
 
 void SimpleIter(double** A, double** C, double* b, double* y, double* x, double* x_old, int n, double* diff)
 {
-    iterations = 0;
+    int iterations = 0;
     double eps = 1e-9;
     //Начальное приближение x^0 любое
     ToNull(x, n);
@@ -188,20 +188,31 @@ void SimpleIter(double** A, double** C, double* b, double* y, double* x, double*
     OutputVect(y, n);
     std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
     Copy(x_old, x, n);
-    MultiplyMatrixToVector(C, x_old, x, n);
-    SumVect(x, y, n);
+    for (int i = 0; i < n; i++)
+    {
+        x[i] = tao * b[i];
+    }
     Copy(diff, x, n);
     DiffVect(diff, x_old, n);
     while (NormaVectora1(diff, n) > eps)
     {
         Copy(x_old, x, n);
-        MultiplyMatrixToVector(C, x_old, x, n);
-        SumVect(x, y, n);
+        for (int i = 0; i < n; i++)
+        {
+            x[i] = 0;
+            for (int j = 0; j < n; j++)
+            {
+                x[i] += -tao * A[i][j] * x_old[j];
+                if (i == j)
+                    x[i] += x_old[i];
+            }
+            x[i] += tao * b[i];
+        }
         Copy(diff, x, n);
         DiffVect(diff, x_old, n);
-        std::cout << "Количество иттераций: " << iterations << "\n";
+        iterations++;
     }
-
+    std::cout << "Количество иттераций: " << iterations << "\n";
 }
 
 int main() {

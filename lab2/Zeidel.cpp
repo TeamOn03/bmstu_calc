@@ -234,13 +234,13 @@ double* SumVectWithResult(double* VectA, double* VectB, int n) {
     return result;
 }
 
-void MultiplyMatrix(double** aMatrix, double** bMatrix, double** product, int n)
+void MultiplyMatrix(double** aMatrix, double** bMatrix, double** Result, int n)
 {
     for (int row = 0; row < n; row++) {
         for (int col = 0; col < n; col++) {
-            product[row][col] = 0;
+            Result[row][col] = 0;
             for (int inner = 0; inner < n; inner++) {
-                product[row][col] += aMatrix[row][inner] * bMatrix[inner][col];
+                Result[row][col] += aMatrix[row][inner] * bMatrix[inner][col];
             }
         }
         //std::cout << "\n";
@@ -297,9 +297,100 @@ void MatrixOnCoef(double** Mat, double coef, int n)
     {
         for (int j = 0; j < n; j++)
         {
-            Mat[i][j] *= -1;
+            Mat[i][j] *= coef;
         }
     }
+}
+
+void VectOnCoef(double* Vect, double coef, int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        Vect[i] *= coef;
+    }
+}
+
+void QR(double** A, double** R, double** Q, double** Qn, int n, double* b, double* bn, double* x)
+{
+    double eps = 0.0001;
+    ToOne(Q, n);
+    ToOne(Qn, n);
+    double cij;
+    double sij;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < i; j++)
+        {
+            if (abs(A[j][j]) < eps)
+                NormVid(j, n, A, Q);
+            Copy(R, A, n);
+            Copy(Qn, Q, n);
+            cij = A[j][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
+            sij = A[i][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
+
+            for (int k = 0; k < n; k++)
+            {
+                R[j][k] = cij * A[j][k] + sij * A[i][k];
+                R[i][k] = -sij * A[j][k] + cij * A[i][k];
+            }
+            for (int k = 0; k < n; k++)
+            {
+                Qn[j][k] = cij * Q[j][k] + sij * Q[i][k];
+                Qn[i][k] = -sij * Q[j][k] + cij * Q[i][k];
+            }
+            Copy(A, R, n);
+            Copy(Q, Qn, n);
+        }
+    }
+
+    MultiplyMatrixToVector(Q, b, bn, n);
+    transpose(Q, n);
+    MultiplyMatrix(Q, R, A, n);
+
+    double s;
+
+    //Обратный проход
+    for (int i = n - 1; i >= 0; i--) {
+        s = 0;
+        for (int j = i + 1; j < n; j++) {
+            s += R[i][j] * x[j];
+        }
+        x[i] = (bn[i] - s) / R[i][i];
+    }
+}
+
+void Inverse(double** Ainv, double** A, int n)
+{
+    double* e = new double[n];
+    double* bn = new double[n];
+    double** R = new double* [n];
+    double** Q = new double* [n];
+    double** Qn = new double* [n];
+    for (int i = 0; i < n; i++)
+    {
+        R[i] = new double[n];
+        Q[i] = new double[n];
+        Qn[i] = new double[n];
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        ToNull(e, n);
+        e[i] = 1;
+        QR(A, R, Q, Qn, n, e, bn, Ainv[i]);
+    }
+    transpose(Ainv, n);
+    for (int i = 0; i < n; i++)
+    {
+        delete[] R[i];
+        delete[] Q[i];
+        delete[] Qn[i];
+    }
+    delete[] e;
+    delete[] bn;
+    delete[] R;
+    delete[] Q;
+    delete[] Qn;
 }
 
 void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double* diff, int n, double** L, double** D, double** U, double** C)
@@ -308,24 +399,41 @@ void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double*
     int iterations = 0;
     double omega = 1;
     ///*
+    double** ResultInv = new double* [n];
+    double** Result = new double* [n];
     for (int i = 0; i < n; i++)
     {
-        y[i] = b[i] / A[i][i];
-        for (int j = 0; j < n; j++)
-        {
-            if (j != i)
-            {
-                C[i][j] = -A[i][j] / A[i][i];
-            }
-            else
-                C[i][j] = 0;
-        }
+        ResultInv[i] = new double[n];
+        Result[i] = new double[n];
     }
+    ToNull(L, n);
+    ToNull(D, n);
+    ToNull(U, n);
+    LDU(A, n, L, D, U);
+    MatrixOnCoef(L, omega, n);//////////////////////
+    SumMat(D, L, C, n);
+    Inverse(ResultInv, C, n);
+    //MatrixOnCoef(ResultInv, omega, n);/////////
+    MultiplyMatrixToVector(ResultInv, b, y, n);
+    VectOnCoef(y, omega, n);
+    //MatrixOnCoef(ResultInv, 1 / omega, n);////////
+    MatrixOnCoef(D, 1 - omega, n);////////////////////
+    MatrixOnCoef(U, -omega, n);/////////////////////
+    SumMat(D, U, Result, n);
+    MultiplyMatrix(ResultInv, Result, C, n);
+
     std::cout << "Матрица С и вектор y: " << std::endl;
     Output(C, n);
     OutputVect(y, n);
+    for (int i = 0; i < n; i++)
+    {
+        delete[] ResultInv[i];
+        delete[] Result[i];
+    }
+
+    delete[] ResultInv;
+    delete[] Result;
     std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
-    //*/
     do
     {
         ToNull(diff, n);
@@ -347,19 +455,18 @@ void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double*
             }
             x[i] = -omega * temp1 - omega * temp2 + omega * b[i] / A[i][i] + (1 - omega) * x[i];
             diff[i] = x_old[i] - x[i];
-            //difference[i] = sol[i] - solution[i];
         }
         iterations++;
     } while (NormaVectora1(diff, n) > eps);
-    OutputVect(x, n);
 
     std::cout << "Количество иттераций: " << iterations << "\n";
     delete[] y;
 }
 
 
-void Zeidel4Vect(double* a, double* b, doublAe* c, double* d, int n, double* x, double* x_old, double* diff, double** L, double** D, double** U, double** C)
+void Zeidel4Vect(double* a, double* b, double* c, double* d, int n, double* x, double* x_old, double* diff, double** L, double** D, double** U, double** C)
 {
+    int iterations = 0;
     double* y = new double[n];
     double omega = 1;
     double eps = 1e-10;
@@ -370,27 +477,41 @@ void Zeidel4Vect(double* a, double* b, doublAe* c, double* d, int n, double* x, 
         x[i] = 1;
     }
 
+    /*double** ResultInv = new double* [n];
+    double** Result = new double* [n];
     for (int i = 0; i < n; i++)
     {
-        y[i] = d[i] / b[i];
-        for (int j = 0; j < n; j++)
-        {
-            if (j > i)
-            {
-                C[i][j] = -c[j] / b[i];
-            }
-            if (j < i)
-            {
-                C[i][j] = -a[j] / b[i];
-            }
-            else
-                C[i][j] = 0;
-        }
+        ResultInv[i] = new double[n];
+        Result[i] = new double[n];
     }
-    std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
+    ToNull(L, n);
+    ToNull(D, n);
+    ToNull(U, n);
+    LDU(A, n, L, D, U);
+    MatrixOnCoef(L, omega, n);//////////////////////
+    SumMat(D, L, C, n);
+    Inverse(ResultInv, C, n);
+    //MatrixOnCoef(ResultInv, omega, n);/////////
+    MultiplyMatrixToVector(ResultInv, b, y, n);
+    VectOnCoef(y, omega, n);
+    //MatrixOnCoef(ResultInv, 1 / omega, n);////////
+    MatrixOnCoef(D, 1-omega, n);////////////////////
+    MatrixOnCoef(U, -omega, n);/////////////////////
+    SumMat(D, U, Result, n);
+    MultiplyMatrix(ResultInv, Result, C, n);
+
     std::cout << "Матрица С и вектор y: " << std::endl;
-    //Output(C, n);
-    //OutputVect(y, n);
+    Output(C, n);
+    OutputVect(y, n);
+    for (int i = 0; i < n; i++)
+    {
+        delete[] ResultInv[i];
+        delete[] Result[i];
+    }
+
+    delete[] ResultInv;
+    delete[] Result;
+    std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;*/
 
     Copy(diff, x, n);
     DiffVect(diff, x_old, n);
@@ -411,7 +532,9 @@ void Zeidel4Vect(double* a, double* b, doublAe* c, double* d, int n, double* x, 
         Copy(diff, x, n);
         DiffVect(diff, x_old, n);
         normD = NormaVectora1(diff, n);
+        iterations++;
     }
+    std::cout << "Количество иттераций: " << iterations << "\n";
     delete[] y;
 }
 
@@ -478,15 +601,15 @@ int main() {
     }
 
     ToOne(x, n);
-    std::cout << "Решение системы из файла: " << std::endl;
     Zeidel(A, b, 1e-10, x, x_old, diff, n, L, D, U, C);
+    std::cout << "Решение системы из файла: " << std::endl;
+    OutputVect(x, n);
     double* b1;
     b1 = new double[n];
 
     MultiplyMatrixToVector(A, x, b1, n);
     DiffVect(b1, b, n);
-    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
-
+    std::cout << "Норма невязки: " << NormaVectora1(b1, n) << std::endl;
 
     n = 216;
     A = new double* [n];
@@ -501,8 +624,8 @@ int main() {
 
     for (int i = 0; i < n; i++)
     {
-        C[i] = new double[n];
         A[i] = new double[n];
+        C[i] = new double[n];
         L[i] = new double[n];
         D[i] = new double[n];
         U[i] = new double[n];
@@ -530,16 +653,26 @@ int main() {
     d[0] = 6;
     d[n - 1] = 9 - 3 * (n % 2);
 
-    std::cout << "Решение заданной системы: " << std::endl;
     Zeidel4Vect(a, b, c, d, n, x, x_old, diff, L, D, U, C);
-    for (int i = 0; i < n; i++) {
-        std::cout << x[i] << '\n';
-    }
-    //b1 = new double[n];
+    OutputVect(x, n);
+    b1 = new double[n];
 
-    //MultiplyMatrixToVector(A, x, b1, n);
-    //DiffVect(b1, b, n);
-    //std::cout << "Норма невязки: " << NormaVectora1(b1, n);
+    for (int i = 0; i < n; i++)
+    {
+        if (i == 0)
+        {
+            b1[i] = b[i] * x[i] + c[i] * x[i + 1];
+            continue;
+        }
+        if (i == n - 1)
+        {
+            b1[i] = a[i - 1] * x[i - 1] + b[i] * x[i];
+            continue;
+        }
+        b1[i] = a[i - 1] * x[i - 1] + b[i] * x[i] + c[i] * x[i + 1];
+    }
+    DiffVect(b1, d, n);
+    std::cout << "Норма невязки: " << NormaVectora1(b1, n);
 
     delete[] b1;
 
