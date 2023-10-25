@@ -425,6 +425,9 @@ void Relaxation(double** A, double* b, double eps, double* x, double* x_old, dou
     std::cout << "Матрица С и вектор y: " << std::endl;
     Output(C, n);
     OutputVect(y, n);
+    LDU(C, n, L, D, U);
+    Output(L, n);
+    Output(U, n);
     for (int i = 0; i < n; i++)
     {
         delete[] ResultInv[i];

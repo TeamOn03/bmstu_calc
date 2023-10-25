@@ -186,6 +186,36 @@ void SimpleIter(double** A, double** C, double* b, double* y, double* x, double*
     std::cout << "Матрица С и вектор y: " << std::endl;
     Output(C, n);
     OutputVect(y, n);
+
+    double** L;
+    L = new double* [n];
+    double** D;
+    D = new double* [n];
+    double** U;
+    U = new double* [n];
+
+    for (int i = 0; i < n; i++)
+    {
+        L[i] = new double[n];
+        D[i] = new double[n];
+        U[i] = new double[n];
+    }
+
+    LDU(C, n, L, D, U);
+    Output(L, n);
+    Output(U, n);
+
+    for (int i = 0; i < n; i++)
+    {
+        delete[] L[i];
+        delete[] D[i];
+        delete[] U[i];
+    }
+
+    delete[] L;
+    delete[] D;
+    delete[] U;
+    
     std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
     Copy(x_old, x, n);
     for (int i = 0; i < n; i++)
