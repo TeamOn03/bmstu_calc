@@ -161,13 +161,35 @@ void matrix_diag_poz_sign(double** matrix, int n, double* b) {
     }
 }
 
-void SimpleIter(double** A, double** C, double* b, double* y, double* x, double* x_old, int n, double* diff)
+void LDU(double** A, int n, double** L, double** D, double** U)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (j < i)
+            {
+                L[i][j] = A[i][j];
+            }
+            else if (j > i)
+            {
+                U[i][j] = A[i][j];
+            }
+            else
+            {
+                D[i][j] = A[i][j];
+            }
+        }
+    }
+}
+
+void SimpleIter(double** A, double** C, double* b, double* y, double* x, double* x_old, int n, double* diff, double** L, double** D, double** U)
 {
     int iterations = 0;
     double eps = 1e-9;
     //Начальное приближение x^0 любое
     ToNull(x, n);
-    double tao = 0.0001;
+    double tao = 1e-4;
     matrix_diag_poz_sign(A, n, b);
     //C = -(tao*A-E)
     //y = tao*b
@@ -187,35 +209,14 @@ void SimpleIter(double** A, double** C, double* b, double* y, double* x, double*
     Output(C, n);
     OutputVect(y, n);
 
-    double** L;
-    L = new double* [n];
-    double** D;
-    D = new double* [n];
-    double** U;
-    U = new double* [n];
-
-    for (int i = 0; i < n; i++)
-    {
-        L[i] = new double[n];
-        D[i] = new double[n];
-        U[i] = new double[n];
-    }
-
+    ToNull(L, n);
+    ToNull(U, n);
     LDU(C, n, L, D, U);
+    std::cout << "Матрица L: " << std::endl;
     Output(L, n);
+    std::cout << "Матрица U: " << std::endl;
     Output(U, n);
 
-    for (int i = 0; i < n; i++)
-    {
-        delete[] L[i];
-        delete[] D[i];
-        delete[] U[i];
-    }
-
-    delete[] L;
-    delete[] D;
-    delete[] U;
-    
     std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
     Copy(x_old, x, n);
     for (int i = 0; i < n; i++)
@@ -302,7 +303,7 @@ int main() {
     }
 
     std::cout << "Решение системы из файла: " << std::endl;
-    SimpleIter(A, C, b, y, x, x_old, n, diff);
+    SimpleIter(A, C, b, y, x, x_old, n, diff, L, D, U);
     for (int i = 0; i < n; i++) {
         std::cout << x[i] << '\n';
     }
@@ -324,6 +325,10 @@ int main() {
         delete[] U[i];
     }
 
+
+    delete[] L;
+    delete[] D;
+    delete[] U;
     delete[] C;
     delete[] A;
     delete[] b;

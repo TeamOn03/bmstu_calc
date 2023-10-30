@@ -426,7 +426,9 @@ void Zeidel(double** A, double* b, double eps, double* x, double* x_old, double*
     Output(C, n);
     OutputVect(y, n);
     LDU(C, n, L, D, U);
+    std::cout << "Матрица L: " << std::endl;
     Output(L, n);
+    std::cout << "Матрица U: " << std::endl;
     Output(U, n);
     for (int i = 0; i < n; i++)
     {

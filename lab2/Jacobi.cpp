@@ -150,7 +150,29 @@ void Output(double** A, int n) {
     }
 }
 
-void Jacobi(double** A, double** C, double* b, double* y, double* x, double* x_old, int n, double* diff)
+void LDU(double** A, int n, double** L, double** D, double** U)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            if (j < i)
+            {
+                L[i][j] = A[i][j];
+            }
+            else if (j > i)
+            {
+                U[i][j] = A[i][j];
+            }
+            else
+            {
+                D[i][j] = A[i][j];
+            }
+        }
+    }
+}
+
+void Jacobi(double** A, double** C, double* b, double* y, double* x, double* x_old, int n, double* diff, double** L, double** D, double** U)
 {
     int iterations = 0;
     double eps = 0.001;
@@ -178,34 +200,13 @@ void Jacobi(double** A, double** C, double* b, double* y, double* x, double* x_o
     Output(C, n);
     OutputVect(y, n);
 
-    double** L;
-    L = new double* [n];
-    double** D;
-    D = new double* [n];
-    double** U;
-    U = new double* [n];
-
-    for (int i = 0; i < n; i++)
-    {
-        L[i] = new double[n];
-        D[i] = new double[n];
-        U[i] = new double[n];
-    }
-
+    ToNull(L, n);
+    ToNull(U, n);
     LDU(C, n, L, D, U);
+    std::cout << "Матрица L: " << std::endl;
     Output(L, n);
+    std::cout << "Матрица U: " << std::endl;
     Output(U, n);
-
-    for (int i = 0; i < n; i++)
-    {
-        delete[] L[i];
-        delete[] D[i];
-        delete[] U[i];
-    }
-
-    delete[] L;
-    delete[] D;
-    delete[] U;
 
     std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
     Copy(x_old, x, n);
@@ -282,7 +283,7 @@ int main() {
     }
 
     std::cout << "Решение системы из файла: " << std::endl;
-    Jacobi(A, C, b, y, x, x_old, n, diff);
+    Jacobi(A, C, b, y, x, x_old, n, diff, L, D, U);
     for (int i = 0; i < n; i++) {
         std::cout << x[i] << '\n';
     }
@@ -302,7 +303,9 @@ int main() {
         delete[] U[i];
     }
 
-
+    delete[] L;
+    delete[] D;
+    delete[] U;
     delete[] C;
     delete[] A;
     delete[] b;
