@@ -2,7 +2,16 @@
 #include <fstream>
 #include <math.h>
 
-
+void swap_ij(double** matrix, int i, int j, int n)
+{
+    double temp;
+    for (int k = 0; k < n; k++)
+    {
+        temp = matrix[i][k];
+        matrix[i][k] = matrix[j][k];
+        matrix[j][k] = temp;
+    }
+}
 void transpose(double** matrix, int n) //либо int matrix[][5], либо int (*matrix)[5]
 {
     double t;
@@ -237,10 +246,12 @@ double* SumVectWithResult(double* VectA, double* VectB, int n) {
 
 void MultiplyMatrix(double** aMatrix, double** bMatrix, double** Result, int n)
 {
+    //std::cout << bMatrix[0][0] << std::endl;
     for (int row = 0; row < n; row++) {
         for (int col = 0; col < n; col++) {
             Result[row][col] = 0;
-            for (int inner = 0; inner < n; inner++) {
+            for (int inner = 0; inner < n; inner++)
+            {
                 Result[row][col] += aMatrix[row][inner] * bMatrix[inner][col];
             }
         }
@@ -264,6 +275,12 @@ void VectOnCoef(double* Vect, double coef, int n)
     for (int i = 0; i < n; i++)
     {
         Vect[i] *= coef;
+    }
+}
+
+void sum_i2j_with_c(double** matrix, int i, int j, double c, int n) {
+    for (int k = 0; k < n; k++) {
+        matrix[j][k] = matrix[j][k] + c * matrix[i][k];
     }
 }
 
@@ -316,6 +333,52 @@ void QR(double** A, double** R, double** Q, double** Qn, int n, double* b, doubl
     }
 }
 
+void QR(double** A, double** R, double** Q, double** Qn, int n)
+{
+    double eps = 0.0001;
+    ToOne(Q, n);
+    ToOne(Qn, n);
+    double cij;
+    double sij;
+    double** Amem = new double* [n];
+    for (int i = 0; i < n; i++)
+    {
+        Amem[i] = new double[n];
+    }
+    Copy(Amem, A, n);
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < i; j++)
+        {
+            if (abs(A[j][j]) < eps)
+                NormVid(j, n, A, Q);
+            Copy(R, A, n);
+            Copy(Qn, Q, n);
+            cij = A[j][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
+            sij = A[i][j] / (sqrt(A[j][j] * A[j][j] + A[i][j] * A[i][j]));
+
+            for (int k = 0; k < n; k++)
+            {
+                R[j][k] = cij * A[j][k] + sij * A[i][k];
+                R[i][k] = -sij * A[j][k] + cij * A[i][k];
+            }
+            for (int k = 0; k < n; k++)
+            {
+                Qn[j][k] = cij * Q[j][k] + sij * Q[i][k];
+                Qn[i][k] = -sij * Q[j][k] + cij * Q[i][k];
+            }
+            Copy(A, R, n);
+            Copy(Q, Qn, n);
+        }
+    }
+    Copy(A, Amem, n);
+    for (int i = 0; i < n; i++)
+    {
+        delete[] Amem[i];
+    }
+    delete[] Amem;
+}
+
 void Inverse(double** Ainv, double** A, int n)
 {
     double* e = new double[n];
@@ -366,6 +429,121 @@ double func(double x)
 double deriv(double x)
 {
     return (x - 0.1) * (x - 0.22) * (x - 0.55) * (x - 0.7) * (x - 0.75);
+}
+
+void Tmat(double** T, int k, int l, double alpha, double beta, int n)
+{
+    ToOne(T, n);
+    T[k][k] = alpha;
+    T[k][l] = beta;
+    T[l][k] = -beta;
+    T[l][l] = alpha;
+}
+
+void QRAlgorithm(double** A, int n)
+{
+    double** R = new double* [n];
+    double** Q = new double* [n];
+    double** Qn = new double* [n];
+    for (int i = 0; i < n; i++)
+    {
+        R[i] = new double[n];
+        Q[i] = new double[n];
+        Qn[i] = new double[n];
+    }
+
+    double eps = 1e-3;
+    //while (abs(A[n-1][n-1])>eps) {
+    for (int i = 0; i < 1; i++)
+    {
+        QR(A, R, Q, Qn, n);
+        MultiplyMatrix(A, Q, Qn, n);
+        transpose(Q, n);
+        MultiplyMatrix(Q, Qn, A, n);
+        //Output(A, n);
+
+        //Output(Qn, n);
+        //Output(A, n);
+    }
+    //}
+
+    for (int i = 0; i < n; i++)
+    {
+        delete[] R[i];
+        delete[] Q[i];
+        delete[] Qn[i];
+    }
+    delete[] R;
+    delete[] Q;
+    delete[] Qn;
+}
+
+void Heisenberg(double** A, int n)
+{
+    double alpha;
+    double beta;
+    double c;
+    double** T;
+    double** Result;
+    T = new double* [n];
+    Result = new double* [n];
+    // int iter = 0;
+    for (int i = 0; i < n; i++)
+    {
+        T[i] = new double[n];
+        Result[i] = new double[n];
+    }
+
+    /*for (int k = 1; k < n - 1; k++) {
+        //Обнуляем столбик
+        //Находим максимальный элемент в столбце
+        int max_ind = k;
+        for (int x = k + 1; x < n; x++) {
+            if (fabs(A[x][k-1]) > fabs(A[max_ind][k-1])) {
+                max_ind = x;
+            }
+        }
+        if (A[max_ind][k-1] == 0)
+        {
+            std::cout << "Матрица несовместная";
+            return;
+        }
+        //Ставим его на k место
+        swap_ij(A, k, max_ind, n);
+        for (int x = k + 1; x < n; x++) {
+            sum_i2j_with_c(A, k, x, -A[x][k-1] / A[k][k-1], n);
+            //std::cout << k << " " << x+1 << std::endl;
+        }
+    }
+    Output(A, n)*////////////////////////////////////////////////////////////////////Работает но не то
+    for (int k = 1; k < n - 1; k++)
+    {
+        for (int l = k + 1; l < n; l++)
+        {
+            //iter++;
+            alpha = A[k][k - 1] / sqrt(A[k][k - 1] * A[k][k - 1] + A[l][k - 1] * A[l][k - 1]);
+            beta = A[l][k - 1] / sqrt(A[k][k - 1] * A[k][k - 1] + A[l][k - 1] * A[l][k - 1]);
+            Tmat(T, k, l, alpha, beta, n);
+            MultiplyMatrix(T, A, Result, n);
+            transpose(T, n);
+            MultiplyMatrix(Result, T, A, n);
+            //c = alpha * alpha + beta * beta;
+            //for (int i = 0; i < n; i++)
+            //{
+            //    A[k][i] = alpha * A[k][i] + beta * A[l][i];
+            //    A[l][i] = -beta * A[k][i] + alpha * A[l][i];
+            //}
+        }
+    }
+    Output(A, n);
+    //std::cout << iter << " ";
+    for (int i = 0; i < n; i++)
+    {
+        delete[] T[i];
+        delete[] Result[i];
+    }
+    delete[] T;
+    delete[] Result;
 }
 
 double Bisec(double a, double b)//double(*func)(double))
@@ -449,9 +627,41 @@ int main() {
     std::ifstream fin("test.txt");
     setlocale(LC_ALL, "Russian");
 
-    double NulFunc = Newton(0.56, 0.74);
+    int n;
+    fin >> n;
 
-    std::cout << NulFunc;
+    double** A;
+    A = new double* [n];
+
+    double* b;
+    b = new double[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        A[i] = new double[n];
+    }
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            fin >> A[i][j];
+        }
+    }
+    //Output(A, n);
+    for (int i = 0; i < n; i++) {
+        fin >> b[i];
+    }
+
+    Heisenberg(A, n);
+    QRAlgorithm(A, n);
+    Output(A, n);
+
+    for (int i = 0; i < n; i++)
+    {
+        delete[] A[i];
+    }
+
+    delete[] b;
+    delete[] A;
 
     return 0;
 }
