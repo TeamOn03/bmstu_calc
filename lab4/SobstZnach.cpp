@@ -5,7 +5,7 @@
 void swap_ij(double** matrix, int i, int j, int n)
 {
     double temp;
-    for (int k = 0; k < n; k++) 
+    for (int k = 0; k < n; k++)
     {
         temp = matrix[i][k];
         matrix[i][k] = matrix[j][k];
@@ -95,7 +95,7 @@ double NormaVectora2(double* b, int n)
     double answer = 0;
     for (int i = 0; i < n; i++)
     {
-        answer += (b[i])*(b[i]);
+        answer += (b[i]) * (b[i]);
     }
     return sqrt(answer);
 }
@@ -257,7 +257,7 @@ double* SumVectWithResult(double* VectA, double* VectB, int n) {
 
 void MultiplyMatrix(double** aMatrix, double** bMatrix, double** Result, int n)
 {
-    double** Amem = new double*[n];
+    double** Amem = new double* [n];
     for (int i = 0; i < n; i++)
     {
         Amem[i] = new double[n];
@@ -266,7 +266,7 @@ void MultiplyMatrix(double** aMatrix, double** bMatrix, double** Result, int n)
     for (int row = 0; row < n; row++) {
         for (int col = 0; col < n; col++) {
             Amem[row][col] = 0;
-            for (int inner = 0; inner < n; inner++) 
+            for (int inner = 0; inner < n; inner++)
             {
                 Amem[row][col] += aMatrix[row][inner] * bMatrix[inner][col];
             }
@@ -343,7 +343,7 @@ void QR(double** A, double** R, double** Q, double** Qn, int n, double* b, doubl
     MultiplyMatrixToVector(Q, b, bn, n);
     transpose(Q, n);
     MultiplyMatrix(Q, R, A, n);
-
+    //Output(A, n);
     double s;
 
     //Обратный проход
@@ -353,7 +353,9 @@ void QR(double** A, double** R, double** Q, double** Qn, int n, double* b, doubl
             s += R[i][j] * x[j];
         }
         x[i] = (bn[i] - s) / R[i][i];
+        //std::cout << x[i];
     }
+    //OutputVect(x, n);
 }
 
 void QR(double** A, double** R, double** Q, int n)
@@ -396,6 +398,7 @@ void QR(double** A, double** R, double** Q, int n)
             Copy(Q, Qn, n);
         }
     }
+    transpose(Q, n);
     Copy(A, Amem, n);
     for (int i = 0; i < n; i++)
     {
@@ -419,6 +422,7 @@ void Inverse(double** Ainv, double** A, int n)
         Q[i] = new double[n];
         Qn[i] = new double[n];
     }
+    //QR(A, R, Q, Qn, n, e, bn, Ainv[0]);
 
     for (int i = 0; i < n; i++)
     {
@@ -462,15 +466,68 @@ void getL(double** A, double** L, int n)
 {
     for (int i = 0; i < n; i++)
     {
-        for (int j = i+1; j < n; j++)
+        for (int j = i + 1; j < n; j++)
         {
             L[j][i] = A[j][i];
         }
     }
 }
 
+double shift(double** A, int n)
+{
+    double** AlE = new double* [n];
+    double** E = new double* [n];
+    for (int i = 0; i < n; i++)
+    {
+        E[i] = new double[n];
+        AlE[i] = new double[n];
+    }
+    ToOne(E, n);
+    double mem = A[n - 1][n - 1];
+
+    MatrixOnCoef(E, -mem, n);
+    SumMat(A, E, AlE, n);
+
+    Copy(A, AlE, n);
+
+    for (int i = 0; i < n; i++)
+    {
+        delete[] E[i];
+        delete[] AlE[i];
+    }
+    delete[] E;
+    delete[] AlE;
+
+    return mem;
+}
+
+void unshift(double** A, double mem, int n)
+{
+    double** AlE = new double* [n];
+    double** E = new double* [n];
+    for (int i = 0; i < n; i++)
+    {
+        E[i] = new double[n];
+        AlE[i] = new double[n];
+    }
+    ToOne(E, n);
+    MatrixOnCoef(E, mem, n);
+    SumMat(A, E, AlE, n);
+
+    Copy(A, AlE, n);
+
+    for (int i = 0; i < n; i++)
+    {
+        delete[] E[i];
+        delete[] AlE[i];
+    }
+    delete[] E;
+    delete[] AlE;
+}
+
 void QRAlgorithm(double** A, int n)
 {
+    double* nuls = new double[n - 1];
     double** R = new double* [n];
     double** Q = new double* [n];
     double** L = new double* [n];
@@ -481,27 +538,51 @@ void QRAlgorithm(double** A, int n)
         L[i] = new double[n];
     }
 
-    double eps = 1e-1;
+    int iter = 0;
+    double mem = 0;
+    bool flag = 0;
+
+    ToNull(R, n);
+    ToNull(Q, n);
+
+    double eps = 1e-6;
+    //double eps1 = 1e-2;
     ToNull(L, n);
     getL(A, L, n);
+    //double nmem = n;
     while (NormaMat1(L, n) > eps)
+        //while (n > 1)
     {
-        //for (int i = 0; i < 1; i++)
+        iter++;
+        //if (flag == 0)
         //{
-        QR(A, R, Q, n);
-        MultiplyMatrix(A, Q, A, n);
-        transpose(Q, n);
-        MultiplyMatrix(Q, A, A, n);
-        //MultiplyMatrix(R, Q, A, n);
-        getL(A, L, n);
-        //std::cout << NormaMat1(L, n) << std::endl;
+        //mem += shift(A, n);
+        //flag = 1;
         //Output(A, n);
-
-        //Output(Qn, n);
-        //Output(A, n);
+        //std::cout << mem << std::endl;
     //}
-    }
+        QR(A, R, Q, n);
+        MultiplyMatrix(R, Q, A, n);
+        getL(A, L, n);
+        for (int i = 0; i < n - 1; i++)
+        {
+            nuls[i] = A[n - 1][i];
+        }
+        //std::cout << NormaVectora1(nuls, n - 1) << std::endl;
+        if (NormaVectora1(nuls, n - 1) < eps)
+        {
+            //if (flag == 1)
+            //{
+              //  flag = 0;
+            unshift(A, mem, n);
+            mem = 0;
+            //}
+            Output(A, n);
+            n = n - 1;
 
+        }
+    }
+    std::cout << iter << std::endl;
     for (int i = 0; i < n; i++)
     {
         delete[] L[i];
@@ -511,6 +592,7 @@ void QRAlgorithm(double** A, int n)
     delete[] L;
     delete[] R;
     delete[] Q;
+    delete[] nuls;
 }
 
 void Heisenberg(double** A, int n)
@@ -549,7 +631,7 @@ void Heisenberg(double** A, int n)
                 A[k][i] = alpha * Aki + beta * Ali;
                 A[l][i] = alpha * Ali - beta * Aki;
             }
-            for(int i = 0; i < n; i++)
+            for (int i = 0; i < n; i++)
             {
                 Aik = A[i][k];
                 Ail = A[i][l];
@@ -559,7 +641,7 @@ void Heisenberg(double** A, int n)
             //Output(A, n);
         }
     }
-    //Output(A, n);
+    Output(A, n);
     for (int i = 0; i < n; i++)
     {
         //delete[] T[i];
@@ -588,7 +670,7 @@ void ReverseIter(double** AlE, double* x, int n)
         x[i] = estime[i] / NormaVectora2(y, n);
     }
     ToOne(estimeMem, n);
-   
+
     Inverse(AlEmem, AlE, n);
     while (NormaVectora2(estime, n) > eps)
     {
@@ -625,7 +707,7 @@ double Reley(double** A, double* x, int n)
     double lymbda = 0;
     double* xextra = new double[n];
     double* estime = new double[n];
-    
+
     double** AlE = new double* [n];
     double** AlEinv = new double* [n];
     double** E = new double* [n];
@@ -635,7 +717,7 @@ double Reley(double** A, double* x, int n)
         AlE[i] = new double[n];
         AlEinv[i] = new double[n];
     }
-    double eps = 1e-5;
+    double eps = 1e-8;
     ToOne(estime, n);
 
     /* [0] = -0.8644;
@@ -644,6 +726,7 @@ double Reley(double** A, double* x, int n)
     x[3] = -0.4391;
 
     std::cout << NormaVectora1(x, n) << std::endl;*/
+    //ToNull(AlEinv, 0);
 
     while (NormaVectora2(estime, n) > eps)
     {
@@ -656,13 +739,14 @@ double Reley(double** A, double* x, int n)
         MatrixOnCoef(E, -lymbda, n);
         SumMat(A, E, AlE, n);
         Inverse(AlEinv, AlE, n);
+        //Output(AlEinv, n);
         MultiplyMatrixToVector(AlEinv, x, xextra, n);
         for (int i = 0; i < n; i++)
         {
             x[i] = xextra[i] / NormaVectora2(xextra, n);
         }
         MultiplyMatrixToVector(AlE, x, estime, n);
-        
+
         //std::cout << NormaVectora1(estime, n) << std::endl;
     }
 
@@ -711,9 +795,11 @@ int main() {
             fin >> A[i][j];
         }
     }
+    //Inverse(E, A, n);///////////////////////////////////////////////
     Copy(Amem, A, n);
 
     Heisenberg(A, n);
+    //Output(A, n);
     QRAlgorithm(A, n);
     Output(A, n);
     for (int i = 0; i < n; i++)
@@ -728,7 +814,7 @@ int main() {
     {
         lymbda = evalues[i];
 
-        
+
         MatrixOnCoef(E, -lymbda, n);
         SumMat(A, E, A, n);
         ReverseIter(A, x, n);
