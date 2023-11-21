@@ -347,36 +347,10 @@ void QR(double** A, double** R, double** Q, double** Qn, int n, double* b, doubl
     double s;
 
     //Обратный проход
-    //OutputVect(x, n);
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            if (std::isnan(R[i][j]))
-            {
-                R[i][j] = 1e-30;
-            }
-        }
-    }
     for (int i = n - 1; i >= 0; i--) {
         s = 0;
-        if (std::isnan(bn[i]))
-        {
-            bn[i] = 1e-50;
-        }
         for (int j = i + 1; j < n; j++) {
-            if (std::isnan(R[i][j]))
-            {
-                R[i][j] = 1e-30;
-            }
             s += R[i][j] * x[j];
-        }
-        if (abs(R[i][i]) < 1e-60 or std::isnan(R[i][i]))
-        {
-            if (R[i][i] < 0)
-                R[i][i] = -1e-30;
-            else
-                R[i][i] = 1e-30;
         }
         x[i] = (bn[i] - s) / R[i][i];
         //std::cout << x[i];
@@ -577,15 +551,15 @@ void QRAlgorithm(double** A, int n)
     getL(A, L, n);
     //double nmem = n;
     while (NormaMat1(L, n) > eps)
-        //while (n > 1)
+    //while (n > 1)
     {
         iter++;
         if (flag == 0)
         {
             mem += shift(A, n);
             flag = 1;
-            //Output(A, n);
-            //std::cout << mem << std::endl;
+        //Output(A, n);
+        //std::cout << mem << std::endl;
         }
         QR(A, R, Q, n);
         MultiplyMatrix(R, Q, A, n);
@@ -676,47 +650,6 @@ void Heisenberg(double** A, int n)
     //delete[] T;
     delete[] Result;
 }
-void SimpleIter(double** A, double* b, double* x, int n)
-{
-    double* x_old = new double[n];
-    double* diff = new double[n];
-    int iterations = 0;
-    double eps = 1e-2;
-    //Начальное приближение x^0 любое
-    ToNull(x, n);
-    double tao = 1e-4;
-    matrix_diag_poz_sign(A, n, b);
-
-    //std::cout << "Норма матрицы С: " << NormaMat1(C, n) << std::endl;
-    Copy(x_old, x, n);
-    for (int i = 0; i < n; i++)
-    {
-        x[i] = tao * b[i];
-    }
-    Copy(diff, x, n);
-    DiffVect(diff, x_old, n);
-    while (NormaVectora1(diff, n) > eps)
-    {
-        Copy(x_old, x, n);
-        for (int i = 0; i < n; i++)
-        {
-            x[i] = 0;
-            for (int j = 0; j < n; j++)
-            {
-                x[i] += -tao * A[i][j] * x_old[j];
-                if (i == j)
-                    x[i] += x_old[i];
-            }
-            x[i] += tao * b[i];
-        }
-        Copy(diff, x, n);
-        DiffVect(diff, x_old, n);
-        iterations++;
-    }
-    //std::cout << "Количество иттераций: " << iterations << "\n";
-    delete[] diff;
-    delete[] x_old;
-}
 
 void ReverseIter(double** AlE, double* x, int n)
 {
@@ -734,22 +667,19 @@ void ReverseIter(double** AlE, double* x, int n)
     MultiplyMatrixToVector(AlE, x, estime, n);
     for (int i = 0; i < n; i++)
     {
-        x[i] = estime[i] / NormaVectora1(estime, n);
+        x[i] = estime[i] / NormaVectora2(y, n);
     }
-    //std::cout << NormaVectora2(x, n);
     ToOne(estimeMem, n);
 
-    //Inverse(AlEmem, AlE, n);
-    while (NormaVectora1(estime, n) > eps)
+    Inverse(AlEmem, AlE, n);
+    while (NormaVectora2(estime, n) > eps)
     {
-        //MultiplyMatrixToVector(AlEmem, x, y, n);
-        SimpleIter(AlE, x, y, n);
+        MultiplyMatrixToVector(AlEmem, x, y, n);
         for (int i = 0; i < n; i++)
         {
-            x[i] = y[i] / NormaVectora1(y, n);
+            x[i] = y[i] / NormaVectora2(y, n);
         }
         MultiplyMatrixToVector(AlE, x, estime, n);
-        //std::cout << NormaVectora1(estime, n) << std::endl;
     }
     //std::cout << NormaVectoraInf(x, n) << " " << NormaVectora1(x, n) << std::endl;
     for (int i = 0; i < n; i++)
@@ -794,10 +724,10 @@ double Reley(double** A, double* x, int n)
     x[1] = -0.0033;
     x[2] = -0.2445;
     x[3] = -0.4391;
-
+    
     std::cout << NormaVectora1(x, n) << std::endl;*/
     //ToNull(AlEinv, 0);
-
+    
     while (NormaVectora2(estime, n) > eps)
     {
         //MatrixOnCoef(A, 1.55, n);
@@ -851,7 +781,7 @@ public:
     {
         for (int i = 0; i < n; i++)
         {
-            x[i] = a + (b - a) / i;
+            x = a + (b - a) / i;
         }
     }
     double Ck(int k, double x)
@@ -859,7 +789,7 @@ public:
         double result = 0;
         for (int i = 0; i < n; i++)
         {
-            result *= (x - this->x[i]) / (this->x[k] - this->x[i]);
+            result *= (x - x[i]) / (x[k] - x[j]);
         }
         return result;
     }
@@ -916,49 +846,34 @@ int main() {
 
     Copy(A, Amem, n);
     ToOne(E, n);
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n-1; i++)
     {
-        Copy(A, Amem, n);
         lymbda = evalues[i];
 
 
         MatrixOnCoef(E, -lymbda, n);
         SumMat(A, E, A, n);
         ReverseIter(A, x, n);
-        ToOne(E, n);
-
-        /*if (i == 2)
-        {
-            x[0] = 4.82e-6;
-            x[1] = 4.53e-6;
-            x[2] = 0.52732;
-            x[3] = 0.850651;
-        }*/
 
         std::cout << std::endl;
         OutputVect(x, n);
 
-        Copy(A, Amem, n);
-        lymbda = Reley(A, x, n);
+        MatrixOnCoef(E, -1, n);
+        SumMat(A, E, A, n);
+        MatrixOnCoef(E, 1 / lymbda, n);
+        //lymbda = Reley(A, x, n);
         std::cout << lymbda << std::endl;
-        /*if (i == 2)
-        {
-            x[0] = 4.82e-6;
-            x[1] = 4.53e-6;
-            x[2] = 0.52732;
-            x[3] = 0.850651;
-        }*/
-        OutputVect(x, n);
+        //(x, n);
         evalues[i] = lymbda;
     }
-    /*x[0] = 12e-70;
+    x[0]=12e-70;
     x[1] =23e-70;
     x[2] = 43e-70;
     x[3] = 1.000000312;
     std::cout << std::endl;
     lymbda = 1;
     OutputVect(x, n);
-    std::cout << lymbda << std::endl;*/
+    std::cout << lymbda << std::endl;
 
 
 
