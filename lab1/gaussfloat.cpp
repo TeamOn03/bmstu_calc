@@ -1,15 +1,15 @@
-#include <iostream>
+﻿#include <iostream>
 #include <fstream>
 #include <cmath>
 
-void sum_i2j_with_c(double** matrix, int i, int j, double c, int n) {
+void sum_i2j_with_c(float** matrix, int i, int j, float c, int n) {
     for (int k = 0; k < n; k++) {
         matrix[j][k] = matrix[j][k] + c * matrix[i][k];
     }
 }
 
-void swap_ij(double** matrix, int i, int j, int n) {
-    double temp;
+void swap_ij(float** matrix, int i, int j, int n) {
+    float temp;
     for (int k = 0; k < n; k++) {
         temp = matrix[i][k];
         matrix[i][k] = matrix[j][k];
@@ -17,9 +17,9 @@ void swap_ij(double** matrix, int i, int j, int n) {
     }
 }
 
-void transpose(double** matrix, int n) //либо int matrix[][5], либо int (*matrix)[5]
+void transpose(float** matrix, int n) //либо int matrix[][5], либо int (*matrix)[5]
 {
-    double t;
+    float t;
     for (int i = 0; i < n; ++i)
     {
         for (int j = i; j < n; ++j)
@@ -31,7 +31,7 @@ void transpose(double** matrix, int n) //либо int matrix[][5], либо int 
     }
 }
 
-void MultiplyMatrix(double** aMatrix, double** bMatrix, double** product, int n)
+void MultiplyMatrix(float** aMatrix, float** bMatrix, float** product, int n)
 {
     for (int row = 0; row < n; row++) {
         for (int col = 0; col < n; col++) {
@@ -44,7 +44,7 @@ void MultiplyMatrix(double** aMatrix, double** bMatrix, double** product, int n)
     }
 }
 
-void Copy(double** data, double** newData, int n)
+void Copy(float** data, float** newData, int n)
 {
     for (int i = 0; i < n; i++)
     {
@@ -55,7 +55,7 @@ void Copy(double** data, double** newData, int n)
     }
 }
 
-void Copy(double* data, double* newData, int n)
+void Copy(float* data, float* newData, int n)
 {
     for (int i = 0; i < n; i++)
     {
@@ -63,7 +63,7 @@ void Copy(double* data, double* newData, int n)
     }
 }
 
-void ToNull(double** OldM, int n)
+void ToNull(float** OldM, int n)
 {
     for (int i = 0; i < n; i++)
     {
@@ -73,7 +73,7 @@ void ToNull(double** OldM, int n)
         }
     }
 }
-void ToNull(double* OldV, int n)
+void ToNull(float* OldV, int n)
 {
     for (int i = 0; i < n; i++)
     {
@@ -81,7 +81,7 @@ void ToNull(double* OldV, int n)
     }
 }
 
-void ToOne(double** OldM, int n)
+void ToOne(float** OldM, int n)
 {
     ToNull(OldM, n);
     for (int j = 0; j < n; j++)
@@ -90,7 +90,7 @@ void ToOne(double** OldM, int n)
     }
 }
 
-void Output(double** A, double* b, int n) {
+void Output(float** A, float* b, int n) {
     //std::cout << "Матрица:\n" << endl;
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -104,20 +104,20 @@ void Output(double** A, double* b, int n) {
 }
 
 
-void NormVid(int j, int n, double** Mat, double** QMat)
+void NormVid(int j, int n, float** Mat, float** QMat)
 {
-    double maks = 0;
+    float maks = 0;
     int k = 0;
     for (int i = j; i < n; i++)
     {
-        if (maks < std::max(maks, abs(Mat[i][j])))
+        if (maks < abs(Mat[i][j]))
         {
             k = i;
-            maks = std::max(maks, abs(Mat[i][j]));
+            maks = abs(Mat[i][j]);
         }
 
     }
-    double* temp;
+    float* temp;
     temp = Mat[j];
     Mat[j] = Mat[k];
     Mat[k] = temp;
@@ -126,9 +126,9 @@ void NormVid(int j, int n, double** Mat, double** QMat)
     QMat[k] = temp;
 }
 
-double NormaVectora1(double* b, int n)
+float NormaVectora1(float* b, int n)
 {
-    double answer = 0;
+    float answer = 0;
     for (int i = 0; i < n; i++)
     {
         answer += abs(b[i]);
@@ -136,12 +136,12 @@ double NormaVectora1(double* b, int n)
     return answer;
 }
 
-double* DopCount;
+float* DopCount;
 
-double NormaMat1(double** A, int n, double* DopCount)
+float NormaMat1(float** A, int n, float* DopCount)
 {
-    double maks = 0;
-    DopCount = new double[n];
+    float maks = 0;
+    DopCount = new float[n];
 
     for (int i = 0; i < n; i++)
     {
@@ -162,9 +162,9 @@ double NormaMat1(double** A, int n, double* DopCount)
     return maks;
 }
 
-double NormaVectoraInf(double* b, int n)
+float NormaVectoraInf(float* b, int n)
 {
-    double maks = 0;
+    float maks = 0;
     for (int i = 0; i < n; i++)
     {
         if (maks < abs(b[i]))
@@ -175,9 +175,9 @@ double NormaVectoraInf(double* b, int n)
     return maks;
 }
 
-double NormaMatInf(double** A, int n, double* DopCount)
+float NormaMatInf(float** A, int n, float* DopCount)
 {
-    double maks = 0;
+    float maks = 0;
 
     for (int i = 0; i < n; i++)
     {
@@ -198,9 +198,9 @@ double NormaMatInf(double** A, int n, double* DopCount)
     return maks;
 }
 
-void MultiplyMatrixToVector(double** Matrix, double* vector, double* result, int n) {
+void MultiplyMatrixToVector(float** Matrix, float* vector, float* result, int n) {
     for (int i = 0; i < n; i++) {
-        double s = 0;
+        float s = 0;
         for (int j = 0; j < n; j++) {
             s += Matrix[i][j] * vector[j];
         }
@@ -208,7 +208,7 @@ void MultiplyMatrixToVector(double** Matrix, double* vector, double* result, int
     }
 }
 
-void Gauss(double** A, double* b, double* x, int n, double** Acopy, double* bcopy)
+void Gauss(float** A, float* b, float* x, int n, float** Acopy, float* bcopy)
 {
     Copy(bcopy, b, n);
     Copy(Acopy, A, n);
@@ -227,7 +227,7 @@ void Gauss(double** A, double* b, double* x, int n, double** Acopy, double* bcop
         }
         //Ставим его на k место
         swap_ij(A, k, max_ind, n);
-        double temp = b[k];
+        float temp = b[k];
         b[k] = b[max_ind];
         b[max_ind] = temp;
 
@@ -238,7 +238,7 @@ void Gauss(double** A, double* b, double* x, int n, double** Acopy, double* bcop
         }
     }
 
-    double s;
+    float s;
 
     //Output(A, b, n);
     //Обратный проход
@@ -258,7 +258,7 @@ void Gauss(double** A, double* b, double* x, int n, double** Acopy, double* bcop
     //}
 }
 
-void Inverse(double** Ainv, double** A, int n, double* e, double** Acopy, double* bcopy)
+void Inverse(float** Ainv, float** A, int n, float* e, float** Acopy, float* bcopy)
 {
     for (int i = 0; i < n; i++)
     {
@@ -277,28 +277,28 @@ int main() {
     //std::cout << "Введите размер системы: ";
     fin >> n;
     //std::cout << "Введите матрицу системы:\n";
-    double** A;
-    A = new double* [n];
-    double** Acopy;
-    Acopy = new double* [n];
-    double** E;
-    E = new double* [n];
-    double** Ainv;
-    Ainv = new double* [n];
-    double* b;
-    b = new double[n];
-    double* bcopy;
-    bcopy = new double[n];
-    double* DopCount;
-    DopCount = new double[n];
-    double* x;
-    x = new double[n];
+    float** A;
+    A = new float* [n];
+    float** Acopy;
+    Acopy = new float* [n];
+    float** E;
+    E = new float* [n];
+    float** Ainv;
+    Ainv = new float* [n];
+    float* b;
+    b = new float[n];
+    float* bcopy;
+    bcopy = new float[n];
+    float* DopCount;
+    DopCount = new float[n];
+    float* x;
+    x = new float[n];
     for (int i = 0; i < n; i++)
     {
-        A[i] = new double[n];
-        Ainv[i] = new double[n];
-        E[i] = new double[n];
-        Acopy[i] = new double[n];
+        A[i] = new float[n];
+        Ainv[i] = new float[n];
+        E[i] = new float[n];
+        Acopy[i] = new float[n];
     }
 
     for (int i = 0; i < n; i++) {
@@ -321,10 +321,10 @@ int main() {
     }
 
     //3
-    double* b1;
-    b1 = new double[n];
+    float* b1;
+    b1 = new float[n];
 
-    double bdop;
+    float bdop;
 
     for (int i = 0; i < n; i++)
     {
@@ -338,9 +338,24 @@ int main() {
     std::cout << std::endl << "Норма невязки: " << (NormaVectora1(b1, n));
     /////////////////////////////////////////////////////////
 
+    //3
+    float* xReal;
+    xReal = new float[n];
+    xReal[0] = 1;
+    xReal[1] = 1000;
+    xReal[2] = -20;
+    xReal[3] = 3;
+
+    for (int i = 0; i < n; i++)
+    {
+        xReal[i] = abs(abs(xReal[i]) - abs(x[i]));
+    }
+    std::cout << std::endl << "Норма вектора расхождений от теоретических решений: " << (NormaVectora1(xReal, n));
+    /////////////////////////////////////////////////////////
+
     //4,6
-    double* e;
-    e = new double[n];
+    float* e;
+    e = new float[n];
 
     //Copy(A, E, n);
     Inverse(Ainv, A, n, e, Acopy, bcopy);
@@ -352,13 +367,13 @@ int main() {
     /////////////////////////////////////////////////////////
 
     //5
-    double vozm = 0.01;
+    float vozm = 0.01;
     for (int i = 0; i < n; i++) {
         b[i] = b[i] + vozm;
     }
 
-    double* x1;
-    x1 = new double[n];
+    float* x1;
+    x1 = new float[n];
 
     //Copy(A, E, n);
     Gauss(A, b, x1, n, Acopy, bcopy);
@@ -387,7 +402,7 @@ int main() {
 
     delete[] b1;
     delete[] x1;
-    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////           
 
     std::cout << "Единичная:" << std::endl;
     MultiplyMatrix(A, Ainv, E, n);
